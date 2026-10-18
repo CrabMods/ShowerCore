@@ -3,6 +3,7 @@ package mod.crabmod.showercore.block.entity;
 import com.crabmod.hotbath.custom_fluid.CustomFluidAPI;
 import com.crabmod.hotbath.custom_fluid.CustomFluidDefinition;
 import mod.crabmod.showercore.registers.BlockEntitiesRegister;
+import mod.crabmod.showercore.block.BathtubBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
@@ -48,14 +49,9 @@ public class BathtubBlockEntity extends BlockEntity {
     public void setCustomFluidId(@Nullable ResourceLocation customFluidId) {
         this.customFluidId = customFluidId;
         setChanged();
-        if (level != null) {
-            // BathtubBlock#hasDynamicLightEmission returns true and getLightEmission depends
-            // on this BE's customFluidId. The light engine has no way to know the emission
-            // changed unless we explicitly ask it to recheck, so do so on both sides.
-            level.getLightEngine().checkBlock(getBlockPos());
-            if (!level.isClientSide) {
-                level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
-            }
+        updateLightLevel();
+        if (level != null && !level.isClientSide) {
+            level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
         }
     }
 
@@ -79,33 +75,20 @@ public class BathtubBlockEntity extends BlockEntity {
     @Override
     public void onLoad() {
         super.onLoad();
-        // Saved chunks load BE data AFTER the chunk's initial light pass, so the recheck
-        // we do in setCustomFluidId never fired during the load that produced the cached
-        // lightmap. Re-trigger here so a luminous custom fluid lights its bathtub on world
-        // re-entry without requiring a neighboring block update.
-        if (level != null && customFluidId != null) {
-            level.getLightEngine().checkBlock(getBlockPos());
-        }
+        // Also initializes the light property when loading saves made before it existed.
+        updateLightLevel();
     }
 
-    @Override
-    public void handleUpdateTag(CompoundTag tag, net.minecraft.core.HolderLookup.Provider registries) {
-        super.handleUpdateTag(tag, registries);
-        // Bulk chunk-data path: client-side recheck after the chunk's lightmap has been built.
-        if (level != null && level.isClientSide && customFluidId != null) {
-            level.getLightEngine().checkBlock(getBlockPos());
-        }
-    }
-
-    @Override
-    public void onDataPacket(net.minecraft.network.Connection net,
-                             ClientboundBlockEntityDataPacket pkt,
-                             net.minecraft.core.HolderLookup.Provider registries) {
-        super.onDataPacket(net, pkt, registries);
-        // Single-BE update path (live pour into an already-loaded chunk): handleUpdateTag
-        // does NOT fire here, so we need an explicit recheck for emissive custom fluids.
-        if (level != null && level.isClientSide && customFluidId != null) {
-            level.getLightEngine().checkBlock(getBlockPos());
+    private void updateLightLevel() {
+        if (level == null || level.isClientSide) return;
+        BlockState state = level.getBlockState(getBlockPos());
+        int light = state.getValue(BathtubBlock.LIQUID) == BathtubBlock.LiquidType.CUSTOM
+                ? getCustomFluidDefinition().map(CustomFluidDefinition::luminosity).orElse(0) : 0;
+        light = Math.max(0, Math.min(15, light));
+        // The light worker cannot read server block entities. A native state property
+        // gives both sides the same emission and lets vanilla propagate normal updates.
+        if (state.getValue(BathtubBlock.LIGHT_LEVEL) != light) {
+            level.setBlock(getBlockPos(), state.setValue(BathtubBlock.LIGHT_LEVEL, light), 3);
         }
     }
 

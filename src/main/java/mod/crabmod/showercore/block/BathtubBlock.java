@@ -26,6 +26,7 @@ import net.minecraft.world.level.block.state.properties.BedPart;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -89,6 +90,7 @@ public class BathtubBlock extends HorizontalDirectionalBlock implements EntityBl
   }
 
   public static final EnumProperty<BedPart> PART = BlockStateProperties.BED_PART;
+  public static final IntegerProperty LIGHT_LEVEL = IntegerProperty.create("light_level", 0, 15);
   public static final BooleanProperty RUNNING = BooleanProperty.create("running");
   public static final EnumProperty<LiquidType> LIQUID = EnumProperty.create("liquid", LiquidType.class);
 
@@ -171,8 +173,8 @@ public class BathtubBlock extends HorizontalDirectionalBlock implements EntityBl
   );
 
   public BathtubBlock(Properties properties) {
-    super(properties);
-    this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(PART, BedPart.FOOT).setValue(LIQUID, LiquidType.EMPTY));
+    super(properties.lightLevel(state -> state.getValue(LIGHT_LEVEL)));
+    this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(PART, BedPart.FOOT).setValue(LIQUID, LiquidType.EMPTY).setValue(LIGHT_LEVEL, 0));
   }
 
   @Nullable
@@ -242,25 +244,6 @@ public class BathtubBlock extends HorizontalDirectionalBlock implements EntityBl
         default: return HEAD_NORTH_SHAPE;
       }
     }
-  }
-
-  @Override
-  public boolean hasDynamicLightEmission(BlockState state) {
-      return true;
-  }
-
-  @Override
-  public int getLightEmission(BlockState state, BlockGetter level, BlockPos pos) {
-      if (state.getValue(LIQUID) != LiquidType.CUSTOM) {
-          return 0;
-      }
-      BlockEntity be = level.getBlockEntity(pos);
-      if (be instanceof BathtubBlockEntity bathtubBe) {
-          return bathtubBe.getCustomFluidDefinition()
-                  .map(CustomFluidDefinition::luminosity)
-                  .orElse(0);
-      }
-      return 0;
   }
 
   @Nullable
@@ -734,9 +717,7 @@ public class BathtubBlock extends HorizontalDirectionalBlock implements EntityBl
        if (newLiquid == LiquidType.EMPTY && fluid.isEmpty()) {
            running = false;
        }
-       // setBlock must run BEFORE setCustomFluidId so the light engine's recheck
-       // (triggered inside setCustomFluidId) sees the updated LIQUID=CUSTOM state
-       // and computes non-zero luminance for emissive custom fluids.
+       // Update the liquid before deriving its cached block-state light level.
        level.setBlock(pos, state.setValue(LIQUID, newLiquid).setValue(RUNNING, running), 3);
 
        BlockEntity be = level.getBlockEntity(pos);
@@ -851,7 +832,7 @@ public class BathtubBlock extends HorizontalDirectionalBlock implements EntityBl
 
   @Override
   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-    builder.add(FACING, PART, LIQUID, RUNNING);
+    builder.add(FACING, PART, LIQUID, RUNNING, LIGHT_LEVEL);
   }
 
 

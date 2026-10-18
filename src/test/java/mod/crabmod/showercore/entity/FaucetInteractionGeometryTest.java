@@ -1,6 +1,5 @@
 package mod.crabmod.showercore.entity;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.junit.jupiter.api.DisplayName;
@@ -11,8 +10,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.LinkedHashSet;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -37,16 +34,29 @@ class FaucetInteractionGeometryTest {
     @Test
     @DisplayName("Clawfoot faucet interaction hitboxes cover faucet body and all three controls")
     void clawfootHitboxesCoverEveryControlModelElement() throws IOException {
-        JsonObject model = readTemplate("bathtub_clawfoot_head_faucet.json");
         double[][] hitboxes = FaucetInteractionGeometry.hitboxOrigins(true);
-
-        assertEquals(3, hitboxes.length, "Clawfoot controls span the side rim and need three click targets.");
-        for (JsonElement element : model.getAsJsonArray("elements")) {
-            JsonObject box = element.getAsJsonObject();
-            if (isFaucetControl(box)) {
-                assertCoveredByHitboxUnion(box, hitboxes);
+        assertEquals(3, hitboxes.length, "Clawfoot controls need three click targets.");
+        java.util.List<double[]> positions = new java.util.ArrayList<>();
+        boolean faucet = false;
+        int observedFaces = 0;
+        for (String line : Files.readAllLines(TEMPLATE_DIR.resolve("clawfoot/head.obj"))) {
+            String[] fields = line.trim().split("\\s+");
+            if (fields[0].equals("v")) {
+                positions.add(new double[]{Double.parseDouble(fields[1]), Double.parseDouble(fields[2]), Double.parseDouble(fields[3])});
+            } else if (fields[0].equals("g")) {
+                faucet = fields[1].equals("faucet");
+            } else if (faucet && fields[0].equals("f")) {
+                double[] center = new double[3];
+                for (int i = 1; i < fields.length; i++) {
+                    double[] point = positions.get(Integer.parseInt(fields[i].split("/")[0]) - 1);
+                    assertPointCovered(point, hitboxes);
+                    for (int axis = 0; axis < 3; axis++) center[axis] += point[axis] / (fields.length - 1);
+                }
+                assertPointCovered(center, hitboxes);
+                observedFaces++;
             }
         }
+        assertTrue(observedFaces > 0, "Faucet mesh must contain tested surfaces");
     }
 
     @Test
@@ -125,21 +135,13 @@ class FaucetInteractionGeometryTest {
         return new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
     }
 
-    private static boolean isFaucetControl(JsonObject box) {
-        Set<String> textures = elementTextures(box);
-        return textures.contains("#faucet")
-                || textures.contains("#button_base")
-                || textures.contains("#hot_button")
-                || textures.contains("#cold_button");
-    }
-
-    private static Set<String> elementTextures(JsonObject element) {
-        Set<String> textures = new LinkedHashSet<>();
-        JsonObject faces = element.getAsJsonObject("faces");
-        for (String face : faces.keySet()) {
-            textures.add(faces.getAsJsonObject(face).get("texture").getAsString());
-        }
-        return textures;
+    private static void assertPointCovered(double[] point, double[][] hitboxes) {
+        double half = FaucetInteractionGeometry.ENTITY_WIDTH / 2;
+        assertTrue(java.util.Arrays.stream(hitboxes).anyMatch(box ->
+                        point[0] >= box[0] - half - EPS && point[0] <= box[0] + half + EPS
+                        && point[1] >= box[1] - EPS && point[1] <= box[1] + FaucetInteractionGeometry.ENTITY_HEIGHT + EPS
+                        && point[2] >= box[2] - half - EPS && point[2] <= box[2] + half + EPS),
+                "Faucet surface outside clickable targets: " + java.util.Arrays.toString(point));
     }
 
     private static void assertCoveredByHitboxUnion(JsonObject modelBox, double[][] hitboxes) {

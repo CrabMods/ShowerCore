@@ -1,0 +1,59 @@
+{
+  "_comment": "Milk Tea Bath - A warm and comforting milk tea bath with creamy opaque texture. Note: opacity=1.0 makes the fluid as opaque as possible, but Minecraft fluid rendering has inherent translucency from the water texture.",
+  "id": "hotbath:milk_tea",
+  "color": 16115932,
+  "temperature": 45.0,
+  "viscosity": 1500,
+  "density": 1080,
+  "luminosity": 1,
+  "opacity": 1.0,
+  "nutrition": 4,
+  "show_particles": true,
+  "show_bubbles": true,
+  "show_steam": true,
+  "effects": [
+    {
+      "effect": "minecraft:saturation",
+      "duration": 200,
+      "amplifier": 0,
+      "ambient": true,
+      "show_particles": false,
+      "show_icon": true
+    },
+    {
+      "effect": "minecraft:speed",
+      "duration": 400,
+      "amplifier": 0,
+      "ambient": true,
+      "show_particles": false,
+      "show_icon": true
+    }
+  ],
+  "trigger_time_seconds": 12,
+  "translations": {
+    "en_us": "Milk Tea Bath",
+    "zh_cn": "奶茶浴",
+    "zh_tw": "奶茶浴",
+    "ja_jp": "ミルクティー風呂",
+    "ko_kr": "밀크티 목욕",
+    "de_de": "Milchtee-Bad",
+    "es_es": "Baño de Té con Leche",
+    "fr_fr": "Bain au Thé au Lait",
+    "lzh": "乳茶湯",
+    "pt_br": "Banho de Chá com Leite",
+    "ru_ru": "Ванна с Молочным Чаем",
+    "en_us.desc": "A warm and comforting milk tea bath that provides saturation and speed",
+    "zh_cn.desc": "温暖舒适的奶茶浴，提供饱和度和速度效果",
+    "zh_tw.desc": "溫暖舒適的奶茶浴，提供飽和度和速度效果",
+    "ja_jp.desc": "温かく心地よいミルクティー風呂、満腹感とスピードを与える",
+    "ko_kr.desc": "따뜻하고 편안한 밀크티 목욕, 포만감과 속도 효과 제공",
+    "de_de.desc": "Ein warmes und wohltuendes Milchtee-Bad, das Sättigung und Geschwindigkeit gewährt",
+    "es_es.desc": "Un baño de té con leche cálido y reconfortante que proporciona saturación y velocidad",
+    "fr_fr.desc": "Un bain au thé au lait chaud et réconfortant qui offre saturation et vitesse",
+    "lzh.desc": "乳茶湯溫潤宜人，賜飽足疾行之效",
+    "pt_br.desc": "Um banho de chá com leite quente e reconfortante que fornece saturação e velocidade",
+    "ru_ru.desc": "Тёплая и уютная ванна с молочным чаем, дающая насыщение и скорость",
+    "zh_hk": "奶茶浴",
+    "zh_hk.desc": "溫暖舒適的奶茶浴，提供飽和度和速度效果"
+  }
+}

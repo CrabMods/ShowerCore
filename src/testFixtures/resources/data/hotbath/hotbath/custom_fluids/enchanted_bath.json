@@ -1,0 +1,56 @@
+{
+  "_comment": "Enchanted Bath - A mystical bath using lapis lazuli that enhances experience gain",
+  "id": "hotbath:enchanted_bath",
+  "color": 3949738,
+  "temperature": 35.0,
+  "viscosity": 900,
+  "density": 950,
+  "luminosity": 8,
+  "show_particles": true,
+  "show_bubbles": true,
+  "effects": [
+    {
+      "effect": "minecraft:luck",
+      "duration": 1200,
+      "amplifier": 1,
+      "ambient": true,
+      "show_particles": true,
+      "show_icon": true
+    },
+    {
+      "effect": "minecraft:night_vision",
+      "duration": 600,
+      "amplifier": 0,
+      "ambient": true,
+      "show_particles": false,
+      "show_icon": true
+    }
+  ],
+  "trigger_time_seconds": 20,
+  "translations": {
+    "en_us": "Enchanted Bath",
+    "zh_cn": "附魔浴",
+    "zh_tw": "附魔浴",
+    "ja_jp": "エンチャント風呂",
+    "ko_kr": "마법 목욕",
+    "de_de": "Verzaubertes Bad",
+    "es_es": "Baño Encantado",
+    "fr_fr": "Bain Enchanté",
+    "lzh": "附魔之湯",
+    "pt_br": "Banho Encantado",
+    "ru_ru": "Зачарованная Ванна",
+    "en_us.desc": "A mystical enchanted bath that brings good fortune",
+    "zh_cn.desc": "神秘的附魔浴，带来好运",
+    "zh_tw.desc": "神秘的附魔浴，帶來好運",
+    "ja_jp.desc": "神秘的なエンチャント風呂、幸運をもたらす",
+    "ko_kr.desc": "신비로운 마법 목욕, 행운을 가져다 줌",
+    "de_de.desc": "Ein mystisches verzaubertes Bad, das Glück bringt",
+    "es_es.desc": "Un baño encantado místico que trae buena fortuna",
+    "fr_fr.desc": "Un bain enchanté mystique qui apporte la bonne fortune",
+    "lzh.desc": "神秘附魔之湯，招致吉祥",
+    "pt_br.desc": "Um banho encantado místico que traz boa sorte",
+    "ru_ru.desc": "Мистическая зачарованная ванна, приносящая удачу",
+    "zh_hk": "附魔浴",
+    "zh_hk.desc": "神秘的附魔浴，帶來好運"
+  }
+}

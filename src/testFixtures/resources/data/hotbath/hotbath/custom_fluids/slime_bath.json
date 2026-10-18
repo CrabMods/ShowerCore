@@ -1,0 +1,56 @@
+{
+  "_comment": "Slime Bath - A bouncy bath using slime balls that provides jump boost",
+  "id": "hotbath:slime_bath",
+  "color": 7458653,
+  "temperature": 25.0,
+  "viscosity": 2000,
+  "density": 800,
+  "luminosity": 2,
+  "show_particles": true,
+  "show_bubbles": true,
+  "effects": [
+    {
+      "effect": "minecraft:jump_boost",
+      "duration": 800,
+      "amplifier": 2,
+      "ambient": false,
+      "show_particles": true,
+      "show_icon": true
+    },
+    {
+      "effect": "minecraft:slow_falling",
+      "duration": 400,
+      "amplifier": 0,
+      "ambient": true,
+      "show_particles": false,
+      "show_icon": true
+    }
+  ],
+  "trigger_time_seconds": 8,
+  "translations": {
+    "en_us": "Slime Bath",
+    "zh_cn": "史莱姆浴",
+    "zh_tw": "史萊姆浴",
+    "ja_jp": "スライム風呂",
+    "ko_kr": "슬라임 목욕",
+    "de_de": "Schleimbad",
+    "es_es": "Baño de Slime",
+    "fr_fr": "Bain de Slime",
+    "lzh": "史萊姆湯",
+    "pt_br": "Banho de Slime",
+    "ru_ru": "Слизневая Ванна",
+    "en_us.desc": "A bouncy slime bath that enhances jumping ability",
+    "zh_cn.desc": "弹性史莱姆浴，增强跳跃能力",
+    "zh_tw.desc": "彈性史萊姆浴，增強跳躍能力",
+    "ja_jp.desc": "弾むスライム風呂、ジャンプ力を強化",
+    "ko_kr.desc": "탄력 있는 슬라임 목욕, 점프 능력 향상",
+    "de_de.desc": "Ein federndes Schleimbad, das die Sprungfähigkeit verbessert",
+    "es_es.desc": "Un baño de slime elástico que mejora la capacidad de salto",
+    "fr_fr.desc": "Un bain de slime rebondissant qui améliore la capacité de saut",
+    "lzh.desc": "彈躍史萊姆湯，增益跳躍之力",
+    "pt_br.desc": "Um banho de slime elástico que melhora a capacidade de pulo",
+    "ru_ru.desc": "Упругая слизневая ванна, улучшающая способность прыгать",
+    "zh_hk": "史萊姆浴",
+    "zh_hk.desc": "彈性史萊姆浴，增強跳躍能力"
+  }
+}

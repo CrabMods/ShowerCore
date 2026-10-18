@@ -1,0 +1,56 @@
+{
+  "_comment": "Ender Bath - A mysterious bath using ender pearls that provides invisibility and speed",
+  "id": "hotbath:ender_bath",
+  "color": 1381717,
+  "temperature": 15.0,
+  "viscosity": 600,
+  "density": 900,
+  "luminosity": 4,
+  "show_particles": true,
+  "show_bubbles": true,
+  "effects": [
+    {
+      "effect": "minecraft:invisibility",
+      "duration": 600,
+      "amplifier": 0,
+      "ambient": true,
+      "show_particles": false,
+      "show_icon": true
+    },
+    {
+      "effect": "minecraft:speed",
+      "duration": 400,
+      "amplifier": 2,
+      "ambient": true,
+      "show_particles": false,
+      "show_icon": true
+    }
+  ],
+  "trigger_time_seconds": 12,
+  "translations": {
+    "en_us": "Ender Bath",
+    "zh_cn": "末影浴",
+    "zh_tw": "終界浴",
+    "ja_jp": "エンダー風呂",
+    "ko_kr": "엔더 목욕",
+    "de_de": "Enderbad",
+    "es_es": "Baño de Ender",
+    "fr_fr": "Bain de l'Ender",
+    "lzh": "終末之湯",
+    "pt_br": "Banho do Ender",
+    "ru_ru": "Эндер Ванна",
+    "en_us.desc": "A mysterious ender bath that grants invisibility and speed",
+    "zh_cn.desc": "神秘的末影浴，赋予隐身和速度效果",
+    "zh_tw.desc": "神秘的終界浴，賦予隱身和速度效果",
+    "ja_jp.desc": "神秘的なエンダー風呂、透明化とスピード効果を付与",
+    "ko_kr.desc": "신비로운 엔더 목욕, 투명화 및 스피드 효과 부여",
+    "de_de.desc": "Ein mysteriöses Enderbad, das Unsichtbarkeit und Geschwindigkeit verleiht",
+    "es_es.desc": "Un misterioso baño de ender que otorga invisibilidad y velocidad",
+    "fr_fr.desc": "Un bain mystérieux de l'ender qui confère invisibilité et vitesse",
+    "lzh.desc": "神秘終末之湯，賜以隱身與疾行之效",
+    "pt_br.desc": "Um misterioso banho do ender que concede invisibilidade e velocidade",
+    "ru_ru.desc": "Таинственная эндер ванна, дающая невидимость и скорость",
+    "zh_hk": "終界浴",
+    "zh_hk.desc": "神秘的終界浴，賦予隱身和速度效果"
+  }
+}

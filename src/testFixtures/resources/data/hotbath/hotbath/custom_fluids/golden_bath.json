@@ -1,0 +1,56 @@
+{
+  "_comment": "Golden Bath - A luxurious bath that provides regeneration and absorption effects",
+  "id": "hotbath:golden_bath",
+  "color": 16766720,
+  "temperature": 42.0,
+  "viscosity": 1200,
+  "density": 1100,
+  "luminosity": 6,
+  "show_particles": true,
+  "show_bubbles": true,
+  "effects": [
+    {
+      "effect": "minecraft:regeneration",
+      "duration": 400,
+      "amplifier": 1,
+      "ambient": true,
+      "show_particles": false,
+      "show_icon": true
+    },
+    {
+      "effect": "minecraft:absorption",
+      "duration": 600,
+      "amplifier": 1,
+      "ambient": true,
+      "show_particles": false,
+      "show_icon": true
+    }
+  ],
+  "trigger_time_seconds": 10,
+  "translations": {
+    "en_us": "Golden Bath",
+    "zh_cn": "黄金浴",
+    "zh_tw": "黃金浴",
+    "ja_jp": "黄金風呂",
+    "ko_kr": "황금 목욕",
+    "de_de": "Goldbad",
+    "es_es": "Baño Dorado",
+    "fr_fr": "Bain Doré",
+    "lzh": "金湯",
+    "pt_br": "Banho Dourado",
+    "ru_ru": "Золотая Ванна",
+    "en_us.desc": "A luxurious golden bath that provides regeneration and absorption",
+    "zh_cn.desc": "奢华的黄金浴，提供生命恢复和伤害吸收效果",
+    "zh_tw.desc": "奢華的黃金浴，提供生命恢復和傷害吸收效果",
+    "ja_jp.desc": "豪華な黄金風呂、再生とダメージ吸収効果を提供",
+    "ko_kr.desc": "호화로운 황금 목욕, 재생 및 흉수 효과 제공",
+    "de_de.desc": "Ein luxuriöses Goldbad, das Regeneration und Absorption gewährt",
+    "es_es.desc": "Un lujoso baño dorado que proporciona regeneración y absorción",
+    "fr_fr.desc": "Un bain doré luxueux qui offre régénération et absorption",
+    "lzh.desc": "奢華金湯，賜以回生與吸收之效",
+    "pt_br.desc": "Um luxuoso banho dourado que fornece regeneração e absorção",
+    "ru_ru.desc": "Роскошная золотая ванна, дающая регенерацию и поглощение",
+    "zh_hk": "黃金浴",
+    "zh_hk.desc": "奢華的黃金浴，提供生命恢復和傷害吸收效果"
+  }
+}

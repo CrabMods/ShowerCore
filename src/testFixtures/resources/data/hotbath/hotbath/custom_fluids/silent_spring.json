@@ -1,0 +1,57 @@
+{
+  "_comment": "Silent Spring - A mysterious hot spring that absorbs all visual effects, providing a serene and meditative experience",
+  "id": "hotbath:silent_spring",
+  "color": 3158064,
+  "temperature": 38.0,
+  "viscosity": 900,
+  "density": 1050,
+  "luminosity": 0,
+  "show_particles": false,
+  "show_bubbles": false,
+  "show_steam": false,
+  "effects": [
+    {
+      "effect": "minecraft:invisibility",
+      "duration": 300,
+      "amplifier": 0,
+      "ambient": true,
+      "show_particles": false,
+      "show_icon": true
+    },
+    {
+      "effect": "minecraft:night_vision",
+      "duration": 400,
+      "amplifier": 0,
+      "ambient": true,
+      "show_particles": false,
+      "show_icon": true
+    }
+  ],
+  "trigger_time_seconds": 8,
+  "translations": {
+    "en_us": "Silent Spring",
+    "zh_cn": "寂静温泉",
+    "zh_tw": "寂靜溫泉",
+    "ja_jp": "静寂の温泉",
+    "ko_kr": "고요한 온천",
+    "de_de": "Stille Quelle",
+    "es_es": "Manantial Silencioso",
+    "fr_fr": "Source Silencieuse",
+    "lzh": "寂泉",
+    "pt_br": "Nascente Silenciosa",
+    "ru_ru": "Тихий Источник",
+    "en_us.desc": "A mysterious hot spring that absorbs all visual effects, granting invisibility and night vision",
+    "zh_cn.desc": "神秘的温泉，吸收所有视觉效果，赋予隐身和夜视能力",
+    "zh_tw.desc": "神秘的溫泉，吸收所有視覺效果，賦予隱身和夜視能力",
+    "ja_jp.desc": "全ての視覚効果を吸収する神秘的な温泉、透明化と暗視を与える",
+    "ko_kr.desc": "모든 시각 효과를 흡수하는 신비로운 온천, 투명화와 야간 투시를 부여",
+    "de_de.desc": "Eine mysteriöse heiße Quelle, die alle visuellen Effekte absorbiert und Unsichtbarkeit sowie Nachtsicht verleiht",
+    "es_es.desc": "Un manantial misterioso que absorbe todos los efectos visuales, otorgando invisibilidad y visión nocturna",
+    "fr_fr.desc": "Une source chaude mystérieuse qui absorbe tous les effets visuels, accordant invisibilité et vision nocturne",
+    "lzh.desc": "玄泉吸諸視效，賜隱身夜視之能",
+    "pt_br.desc": "Uma nascente misteriosa que absorve todos os efeitos visuais, concedendo invisibilidade e visão noturna",
+    "ru_ru.desc": "Таинственный горячий источник, поглощающий все визуальные эффекты, дарующий невидимость и ночное зрение",
+    "zh_hk": "寂靜溫泉",
+    "zh_hk.desc": "神秘的溫泉，吸收所有視覺效果，賦予隱身和夜視能力"
+  }
+}

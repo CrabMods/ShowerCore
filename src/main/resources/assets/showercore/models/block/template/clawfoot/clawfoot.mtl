@@ -1,0 +1,34 @@
+newmtl body
+Kd 1 1 1
+forge_TintIndex -1
+map_Kd #body
+
+newmtl base
+Kd 1 1 1
+forge_TintIndex -1
+map_Kd #base
+
+newmtl feet
+Kd 1 1 1
+forge_TintIndex -1
+map_Kd #feet
+
+newmtl faucet
+Kd 1 1 1
+forge_TintIndex -1
+map_Kd #faucet
+
+newmtl button_base
+Kd 1 1 1
+forge_TintIndex -1
+map_Kd #button_base
+
+newmtl hot_button
+Kd 1 1 1
+forge_TintIndex -1
+map_Kd #hot_button
+
+newmtl cold_button
+Kd 1 1 1
+forge_TintIndex -1
+map_Kd #cold_button

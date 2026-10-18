@@ -1,5 +1,7 @@
 package mod.crabmod.showercore.client.model;
 
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.world.item.ItemDisplayContext;
 import mod.crabmod.showercore.ShowerCore;
 import mod.crabmod.showercore.block.BathtubBlock;
 import mod.crabmod.showercore.block.entity.BathtubBlockEntity;
@@ -117,6 +119,24 @@ public class DynamicBathtubMaterialModel extends BakedModelWrapper<BakedModel> {
     @Override
     public ItemOverrides getOverrides() {
         return overrides;
+    }
+
+    @Override
+    public BakedModel applyTransform(ItemDisplayContext context, PoseStack poses, boolean leftHand) {
+        BakedModel transformed = originalModel.applyTransform(context, poses, leftHand);
+        return transformed == originalModel ? this : new DynamicBathtubMaterialModel(transformed, itemMaterialBlockId);
+    }
+
+    @Override
+    public List<BakedModel> getRenderPasses(ItemStack stack, boolean fabulous) {
+        List<BakedModel> passes = originalModel.getRenderPasses(stack, fabulous);
+        if (itemMaterialBlockId == null) {
+            return passes;
+        }
+        // Native item rendering consumes each pass, not the parent model's quads.
+        return passes.stream()
+                .map(pass -> (BakedModel) new DynamicBathtubMaterialModel(pass, itemMaterialBlockId))
+                .toList();
     }
 
     @Nullable

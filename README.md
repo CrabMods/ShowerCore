@@ -12,7 +12,7 @@
 
 ▶ [Watch the trailer](https://www.youtube.com/watch?v=iOpgwCFBCWI) · 0:55 · 1080p · English captions, music and effects
 
-[CurseForge](https://www.curseforge.com/minecraft/mc-mods/showercore) · [Modrinth](https://modrinth.com/mod/showercore) · [GitHub](https://github.com/crabsatellite/ShowerCore)
+[CurseForge](https://www.curseforge.com/minecraft/mc-mods/showercore) · [Modrinth](https://modrinth.com/mod/showercore) · [GitHub](https://github.com/CrabMods/ShowerCore)
 
 Requires [Hot Bath](https://www.curseforge.com/minecraft/mc-mods/hotbath).
 

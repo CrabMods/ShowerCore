@@ -1,8 +1,8 @@
 modLoader="javafml"
 loaderVersion="${loader_version_range}"
 license="${mod_license}"
-issueTrackerURL="https://github.com/crabsatellite/ShowerCore/issues"
-updateJSONURL="https://raw.githubusercontent.com/crabsatellite/ShowerCore/1.20.1/update_log.json"
+issueTrackerURL="https://github.com/CrabMods/ShowerCore/issues"
+updateJSONURL="https://raw.githubusercontent.com/CrabMods/ShowerCore/1.20.1/update_log.json"
 
 [[mods]]
 modId="${mod_id}"

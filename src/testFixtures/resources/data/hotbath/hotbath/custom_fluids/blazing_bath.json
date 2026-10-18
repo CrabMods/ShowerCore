@@ -1,0 +1,56 @@
+{
+  "_comment": "Blazing Bath - A hot bath using blaze powder that provides fire resistance and strength",
+  "id": "hotbath:blazing_bath",
+  "color": 16744448,
+  "temperature": 80.0,
+  "viscosity": 800,
+  "density": 1000,
+  "luminosity": 12,
+  "show_particles": true,
+  "show_bubbles": false,
+  "effects": [
+    {
+      "effect": "minecraft:fire_resistance",
+      "duration": 1200,
+      "amplifier": 0,
+      "ambient": true,
+      "show_particles": false,
+      "show_icon": true
+    },
+    {
+      "effect": "minecraft:strength",
+      "duration": 600,
+      "amplifier": 1,
+      "ambient": true,
+      "show_particles": false,
+      "show_icon": true
+    }
+  ],
+  "trigger_time_seconds": 15,
+  "translations": {
+    "en_us": "Blazing Bath",
+    "zh_cn": "烈焰浴",
+    "zh_tw": "烈焰浴",
+    "ja_jp": "ブレイズ風呂",
+    "ko_kr": "블레이즈 목욕",
+    "de_de": "Loderndes Bad",
+    "es_es": "Baño Ardiente",
+    "fr_fr": "Bain Ardent",
+    "lzh": "烈焰之湯",
+    "pt_br": "Banho Flamejante",
+    "ru_ru": "Пылающая Ванна",
+    "en_us.desc": "A blazing hot bath that grants fire resistance and strength",
+    "zh_cn.desc": "炙热的烈焰浴，赋予火焰抵抗和力量效果",
+    "zh_tw.desc": "炙熱的烈焰浴，賦予火焰抵抗和力量效果",
+    "ja_jp.desc": "燃えさかるブレイズ風呂、火炎耐性と力効果を付与",
+    "ko_kr.desc": "불타는 블레이즈 목욕, 화염 저항 및 힘 효과 부여",
+    "de_de.desc": "Ein loderndes heißes Bad, das Feuerresistenz und Stärke verleiht",
+    "es_es.desc": "Un baño ardiente que otorga resistencia al fuego y fuerza",
+    "fr_fr.desc": "Un bain ardent qui confère résistance au feu et force",
+    "lzh.desc": "熾烈烈焰之湯，賜以抗火與力量之效",
+    "pt_br.desc": "Um banho flamejante que concede resistência ao fogo e força",
+    "ru_ru.desc": "Пылающая горячая ванна, дающая огнеупорность и силу",
+    "zh_hk": "烈焰浴",
+    "zh_hk.desc": "炙熱的烈焰浴，賦予火焰抵抗和力量效果"
+  }
+}

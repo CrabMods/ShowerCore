@@ -129,6 +129,12 @@ public final class PoolBlockEntity extends BlockEntity implements BathFluidSourc
         return type==BathtubBlock.LiquidType.CUSTOM?getCustomFluidDefinition().map(f->f.isHot()).orElse(visibleFluid.getFluid()==Fluids.LAVA)
                 :type!=BathtubBlock.LiquidType.EMPTY&&type!=BathtubBlock.LiquidType.WATER;
     }
+    public boolean emitsSteam() {
+        if(!active()||visibleFluid.isEmpty())return false;
+        var definition=getCustomFluidDefinition();
+        if(definition.isPresent())return definition.get().isHot()&&definition.get().showSteam();
+        return liquidType()==BathtubBlock.LiquidType.CUSTOM?mod.crabmod.showercore.Config.steamFluids.contains(visibleFluid.getFluid()):isHot();
+    }
     public boolean touchesWater(AABB bounds) {
         if(!configured()||visibleFluid.isEmpty()||bounds.minY>=origin.getY()+waterY()||bounds.maxY<=origin.getY()+PoolSpec.FLOOR_Y)return false;
         return PoolLayout.area(PoolLayout.clip(layout().waterOutline(),bounds.minX-origin.getX(),bounds.minZ-origin.getZ(),

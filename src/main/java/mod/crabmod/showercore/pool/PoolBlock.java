@@ -92,6 +92,16 @@ public final class PoolBlock extends Block implements EntityBlock,BathFaucet,mod
         }
     }
 
+    @Override public void animateTick(BlockState state,Level level,BlockPos pos,RandomSource random) {
+        if(random.nextInt(10)!=0||!(level.getBlockEntity(pos) instanceof PoolBlockEntity part)||!part.emitsSteam())return;
+        var layout=part.layout();var cell=layout.cell(pos.getX()-part.origin().getX(),pos.getZ()-part.origin().getZ());
+        if(cell==null||cell.water().isEmpty())return;
+        double x=cell.x()+random.nextDouble(),z=cell.z()+random.nextDouble();
+        if(!layout.containsWater(x,z))return;
+        level.addParticle(com.crabmod.hotbath.registers.ParticleRegister.STEAM_PARTICLE.get(),
+                part.origin().getX()+x,part.origin().getY()+part.waterY()+.02,part.origin().getZ()+z,0,.02,0);
+    }
+
     @Override public mod.crabmod.showercore.geometry.BathMountSurface.Support showerSupport(Level level,BlockPos clicked,BlockHitResult hit,mod.crabmod.showercore.geometry.BathroomGeometry.Shower shower) {
         if(!(level.getBlockEntity(clicked) instanceof PoolBlockEntity part)||!part.configured()||part.cell()==null||!part.cell().hasRim())return null;
         var pool=part.controller();if(pool==null)return null;

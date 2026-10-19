@@ -69,6 +69,13 @@ public final class PoolLayout {
         return indexed.get(z * spec.width() + x);
     }
     public List<Seat> seats() { return seats; }
+    public boolean containsWater(double x,double z) {
+        for(int i=0;i<water.size();i++) {
+            var a=water.get(i);var b=water.get((i+1)%water.size());
+            if((b.x-a.x)*(z-a.z)-(b.z-a.z)*(x-a.x)<0)return false;
+        }
+        return true;
+    }
     public int materialCost() { return materialCost; }
     public int capacity() { return capacity; }
     public int controllerX() { return spec.width() / 2; }

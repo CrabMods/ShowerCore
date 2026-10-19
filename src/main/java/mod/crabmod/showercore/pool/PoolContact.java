@@ -28,4 +28,10 @@ public final class PoolContact {
         }
         return null;
     }
+
+    @Nullable public static PoolBlockEntity atPoint(Level level,net.minecraft.world.phys.Vec3 point) {
+        var part=at(level,BlockPos.containing(point));var owner=part==null?null:part.controller();
+        if(owner==null||owner.fluid().isEmpty()||point.y<=owner.origin().getY()+PoolSpec.FLOOR_Y||point.y>=owner.origin().getY()+owner.waterY())return null;
+        return owner.layout().containsWater(point.x-owner.origin().getX(),point.z-owner.origin().getZ())?owner:null;
+    }
 }

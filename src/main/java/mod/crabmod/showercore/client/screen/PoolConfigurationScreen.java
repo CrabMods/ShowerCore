@@ -22,6 +22,14 @@ public final class PoolConfigurationScreen extends AbstractContainerScreen<PoolC
                 .bounds(leftPos+x,topPos+y,width,20).build()));
     }
     @Override protected void init() {
+        // Native scaling keeps the rendered slots and their mouse coordinates in the same space.
+        var window=minecraft.getWindow();
+        int requested=window.calculateScale(minecraft.options.guiScale().get(),minecraft.isEnforceUnicode());
+        double available=Math.min(window.getWidth()/(imageWidth+8.0),window.getHeight()/(imageHeight+8.0));
+        double scale=Math.min(requested,available>=1?Math.floor(available):available);
+        if(minecraft.isEnforceUnicode()&&scale>=2)scale=2*Math.floor(scale/2);
+        window.setGuiScale(scale);
+        width=window.getGuiScaledWidth();height=window.getGuiScaledHeight();
         super.init();buttons.clear();
         button("menu.showercore.pool.rectangle",0,58,22,55);
         button("menu.showercore.pool.rounded",1,117,22,55);
@@ -32,6 +40,11 @@ public final class PoolConfigurationScreen extends AbstractContainerScreen<PoolC
         button("menu.showercore.material.face.side",20,148,74,76);
         button("menu.showercore.pool.room",30,12,110,94);
         button("menu.showercore.pool.done",40,12,136,94);
+    }
+    @Override public void removed() {
+        super.removed();
+        var window=minecraft.getWindow();
+        window.setGuiScale(window.calculateScale(minecraft.options.guiScale().get(),minecraft.isEnforceUnicode()));
     }
     @Override protected void containerTick() {
         super.containerTick();

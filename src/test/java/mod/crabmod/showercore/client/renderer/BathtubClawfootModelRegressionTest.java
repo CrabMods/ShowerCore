@@ -200,7 +200,7 @@ class BathtubClawfootModelRegressionTest {
             assertEquals("minecraft:block/redstone_block", textures.get("hot_button").getAsString());
             assertEquals("minecraft:block/lapis_block", textures.get("cold_button").getAsString());
         }
-        assertTrue(mtl.contains("newmtl base\nKd 1 1 1\nforge_TintIndex 1\nmap_Kd #base"), "Underside marker must preserve its legacy texture while allowing whole-body customization");
+        assertTrue(mtl.replace("\r\n", "\n").contains("newmtl base\nKd 1 1 1\nforge_TintIndex 1\nmap_Kd #base"), "Underside marker must preserve its legacy texture while allowing whole-body customization");
         List<Face> floor = mesh("full").stream().filter(f -> f.group.equals("shell") && f.corners.stream().allMatch(c -> Math.abs(c.position.y - .25) < EPS)).toList();
         assertFalse(floor.isEmpty(), "Bowl floor must exist");
         assertTrue(floor.stream().allMatch(f -> f.material.equals("body")), "Bowl floor must share the body material");

@@ -9,7 +9,9 @@
     "PoolEntityFluidMixin",
     "PoolLivingFluidMixin"
   ],
-  "client": [],
+  "client": [
+    "PoolFloorSittingMixin"
+  ],
   "injectors": {
     "defaultRequire": 1
   },

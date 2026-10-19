@@ -72,6 +72,11 @@ class PoolLayoutTest {
             }
         }
     }
+    @Test void seatsUseTheirPhysicalSupportSurfaces() {
+        for(var spec:samples())for(var seat:PoolLayout.of(spec).seats()) {
+            assertEquals(seat.kind()==PoolLayout.SeatKind.INSIDE?PoolSpec.FLOOR_Y:PoolSpec.RIM_Y,seat.y());
+        }
+    }
     @Test void bothSeatKindsAreAvailableForBathhouses() {
         var layout=PoolLayout.of(new PoolSpec(PoolSpec.Shape.ROUNDED,8,8,4));
         assertTrue(layout.seats().stream().anyMatch(s->s.kind()==PoolLayout.SeatKind.RIM));

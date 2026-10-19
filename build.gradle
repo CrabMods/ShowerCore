@@ -166,7 +166,7 @@ dependencies {
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
     annotationProcessor 'com.google.guava:guava:21.0'
     // Use the local HotBath jar through flatDir so ForgeGradle can deobfuscate it for dev runs.
-    implementation fg.deobf('local.hotbath:hotbath:1.20.1-4.1.0')
+    implementation fg.deobf("local.hotbath:hotbath:${minecraft_version}-${hotbath_version}")
 
     // Unit-test dependencies (JUnit 5, used for pure-Java regression tests)
     testImplementation platform('org.junit:junit-bom:5.10.2')
@@ -194,6 +194,7 @@ dependencies {
 tasks.named('processResources', ProcessResources).configure {
     var replaceProperties = [
             minecraft_version: minecraft_version, minecraft_version_range: minecraft_version_range,
+            hotbath_version     : hotbath_version,
             forge_version: forge_version, forge_version_range: forge_version_range,
             loader_version_range: loader_version_range,
             mod_id: mod_id, mod_name: mod_name, mod_license: mod_license, mod_version: mod_version,

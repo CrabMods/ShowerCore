@@ -22,15 +22,21 @@ public final class PoolSeats {
         }
         double wx=pool.origin().getX()+seat.x(),wy=pool.origin().getY()+seat.y(),wz=pool.origin().getZ()+seat.z();
         if(player.distanceToSqr(wx,wy,wz)>36||!level.noCollision(player,new AABB(wx-.3,wy+.35,wz-.3,wx+.3,wy+1.4,wz+.3)))return false;
-        var entity=new SeatEntity(level,wx,wy,wz);entity.bindPool(pool.ownerPos(),pool.poolId(),seat.index());entity.setYRot(seat.yaw());
+        var entity=new SeatEntity(level,wx,wy,wz);entity.bindPool(pool.ownerPos(),pool.poolId(),seat.index());entity.setYRot(seat.yaw());entity.setPoolSeatKind(seat.kind());
         level.addFreshEntity(entity);
         if(!player.startRiding(entity)) {entity.discard();return false;}
         player.setYRot(seat.yaw());return true;
     }
-    public static boolean validSeat(SeatEntity seat) {
+    public static boolean updateSeat(SeatEntity seat) {
         var level=seat.level();var owner=seat.poolOwner();
         if(owner==null||!level.hasChunkAt(owner))return false;
-        return level.getBlockEntity(owner) instanceof PoolBlockEntity pool&&pool.isController()&&pool.active()
-                &&pool.poolId().equals(seat.poolId())&&seat.poolSlot()>=0&&seat.poolSlot()<pool.layout().seats().size();
+        if(!(level.getBlockEntity(owner) instanceof PoolBlockEntity pool)||!pool.isController()||!pool.active()
+                ||!pool.poolId().equals(seat.poolId())||seat.poolSlot()<0||seat.poolSlot()>=pool.layout().seats().size())return false;
+        var spot=pool.layout().seats().get(seat.poolSlot());
+        seat.setPoolSeatKind(spot.kind());
+        double x=pool.origin().getX()+spot.x(),y=pool.origin().getY()+spot.y(),z=pool.origin().getZ()+spot.z();
+        // Loaded markers use the current physical surface, including seats saved by older versions.
+        if(seat.getX()!=x||seat.getY()!=y||seat.getZ()!=z)seat.setPos(x,y,z);
+        return true;
     }
 }

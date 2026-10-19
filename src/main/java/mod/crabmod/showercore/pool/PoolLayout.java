@@ -174,13 +174,13 @@ public final class PoolLayout {
             for(int j=0;j<steps;j++) {
                 Point p=a.lerp(b,j/(double)steps);
                 if(p.distance(faucet())<.8 || result.stream().anyMatch(s->Math.hypot(s.x-p.x,s.z-p.z)<1.0))continue;
-                addSeat(result,p,PoolSpec.RIM_Y+.05,SeatKind.RIM);
+                addSeat(result,p,PoolSpec.RIM_Y,SeatKind.RIM);
             }
         }
         for(double z=.75;z<spec.length()-.5;z+=1.1)for(double x=.75;x<spec.width()-.5;x+=1.1) {
             Point p=new Point(x,z);
             if(!spec.contains(x,z,.6) || result.stream().anyMatch(s->Math.hypot(s.x-p.x,s.z-p.z)<.85))continue;
-            addSeat(result,p,PoolSpec.FLOOR_Y+.25,SeatKind.INSIDE);
+            addSeat(result,p,PoolSpec.FLOOR_Y,SeatKind.INSIDE);
         }
         return List.copyOf(result);
     }

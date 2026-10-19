@@ -4,6 +4,10 @@ import com.crabmod.hotbath.custom_fluid.CustomFluidAPI;
 import mod.crabmod.showercore.block.BathtubBlock;
 import mod.crabmod.showercore.block.entity.BathtubBlockEntity;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
@@ -19,6 +23,25 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class SeatEntity extends Entity {
+    private static final EntityDataAccessor<Byte> POOL_SEAT_KIND =
+            SynchedEntityData.defineId(SeatEntity.class,EntityDataSerializers.BYTE);
+    // Vanilla player origin, hip pivot and half leg depth, at the native player render scale.
+    private static final double SITTING_POSE_HEIGHT = (1.501F - 12.0 / 16.0 - 2.0 / 16.0) * .9375;
+
+    public boolean isFloorSitting() { return entityData.get(POOL_SEAT_KIND)==1; }
+    public void setPoolSeatKind(mod.crabmod.showercore.pool.PoolLayout.SeatKind kind) {
+        entityData.set(POOL_SEAT_KIND,(byte)(kind==mod.crabmod.showercore.pool.PoolLayout.SeatKind.INSIDE?1:2));
+    }
+
+    @Override
+    protected void positionRider(Entity passenger, Entity.MoveFunction move) {
+        if (entityData.get(POOL_SEAT_KIND)!=0 && passenger instanceof Player player) {
+            move.accept(passenger,getX(),getY()-SITTING_POSE_HEIGHT*player.getScale(),getZ());
+        } else {
+            super.positionRider(passenger,move);
+        }
+    }
+
     private BlockPos poolOwner;
     private java.util.UUID poolId;
     private int poolSlot = -1;
@@ -36,7 +59,7 @@ public class SeatEntity extends Entity {
     }
 
     @Override
-    protected void defineSynchedData() {}
+    protected void defineSynchedData() { entityData.define(POOL_SEAT_KIND,(byte)0); }
 
     @Override
     protected void readAdditionalSaveData(CompoundTag tag) {
@@ -62,7 +85,7 @@ public class SeatEntity extends Entity {
             }
 
             if (poolId != null) {
-                if (!mod.crabmod.showercore.pool.PoolSeats.validSeat(this)) { ejectPassengers(); discard(); }
+                if (!mod.crabmod.showercore.pool.PoolSeats.updateSeat(this)) { ejectPassengers(); discard(); }
                 return;
             }
             if (this.tickCount % 20 == 0) {

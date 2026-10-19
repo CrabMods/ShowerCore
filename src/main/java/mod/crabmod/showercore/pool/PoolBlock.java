@@ -25,7 +25,8 @@ public final class PoolBlock extends Block implements EntityBlock,BathFaucet,mod
     public static final BooleanProperty CONTROLLER=BooleanProperty.create("controller");
     public static final IntegerProperty LIGHT=IntegerProperty.create("light",0,15);
     public PoolBlock(Properties properties) {
-        super(properties.dynamicShape().lightLevel(s->s.getValue(LIGHT)));
+        // Collision is resolved from the block entity; its empty cached shape must not allow fluid replacement.
+        super(properties.forceSolidOn().dynamicShape().lightLevel(s->s.getValue(LIGHT)));
         registerDefaultState(stateDefinition.any().setValue(CONTROLLER,false).setValue(LIGHT,0));
     }
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b) {b.add(CONTROLLER,LIGHT);}

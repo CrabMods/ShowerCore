@@ -321,4 +321,27 @@ public final class PoolGameTests {
         h.assertTrue(h.getLevel().getCapability(net.neoforged.neoforge.capabilities.Capabilities.FluidHandler.BLOCK,member,null)==null,"Removed member still exposes a fluid capability");h.succeed();
     }
 
+    private static void externalFlow(GameTestHelper h, PoolSpec spec, Block source) {
+        var p=player(h,spec,false);var owner=place(h,spec,p);var layout=owner.layout();var id=owner.poolId();
+        BlockPos.betweenClosedStream(origin(h).offset(-1,-1,-1),origin(h).offset(spec.width(),-1,spec.length()))
+                .forEach(pos->h.getLevel().setBlock(pos,Blocks.STONE.defaultBlockState(),3));
+        h.assertTrue(owner.fluidHandler().fill(new FluidStack(Fluids.WATER,1000),IFluidHandler.FluidAction.EXECUTE)==1000,"Initial pool water");
+        h.getLevel().setBlock(origin(h).offset(2,2,-1),source.defaultBlockState(),3);
+        h.runAtTickTime(100,()->{
+            h.assertTrue(!h.getLevel().getFluidState(origin(h).offset(2,0,-1)).isEmpty(),"External liquid did not reach the pool wall");
+            h.assertTrue(blocks(h,spec)==layout.cells().size(),"External liquid displaced a structural member");
+            h.assertTrue(owner.active()&&owner.poolId().equals(id)&&owner.fluid().getAmount()==1000,"External liquid changed the shared tank or owner");
+            h.assertTrue(drops(h)==0,"External liquid dismantled or refunded the pool");
+            h.getLevel().destroyBlock(origin(h).offset(2,0,2),true,p);
+            h.assertTrue(blocks(h,spec)==0&&drops(h)==layout.materialCost(),"Player mining must still dismantle and refund once");
+            h.succeed();
+        });
+    }
+    @GameTest(template="pool_empty",timeoutTicks=130) public static void pool_rectangle_resists_water_flow(GameTestHelper h){externalFlow(h,RECT,Blocks.WATER);}
+    @GameTest(template="pool_empty",timeoutTicks=130) public static void pool_rounded_resists_water_flow(GameTestHelper h){externalFlow(h,ROUND,Blocks.WATER);}
+    @GameTest(template="pool_empty",timeoutTicks=130) public static void pool_circle_resists_water_flow(GameTestHelper h){externalFlow(h,CIRCLE,Blocks.WATER);}
+    @GameTest(template="pool_empty",timeoutTicks=130) public static void pool_rectangle_resists_lava_flow(GameTestHelper h){externalFlow(h,RECT,Blocks.LAVA);}
+    @GameTest(template="pool_empty",timeoutTicks=130) public static void pool_rounded_resists_lava_flow(GameTestHelper h){externalFlow(h,ROUND,Blocks.LAVA);}
+    @GameTest(template="pool_empty",timeoutTicks=130) public static void pool_circle_resists_lava_flow(GameTestHelper h){externalFlow(h,CIRCLE,Blocks.LAVA);}
+
 }

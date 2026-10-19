@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "X X",
+    "XXX",
+    " IX"
+  ],
+  "key": {
+    "X": {
+      "item": "minecraft:pink_concrete"
+    },
+    "I": {
+      "item": "minecraft:nautilus_shell"
+    }
+  },
+  "result": {
+    "id": "showercore:bathtub_seashell_pink"
+  }
+}

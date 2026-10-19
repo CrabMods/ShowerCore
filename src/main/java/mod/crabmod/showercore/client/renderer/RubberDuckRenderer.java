@@ -26,10 +26,12 @@ public class RubberDuckRenderer extends EntityRenderer<RubberDuckEntity> {
         poseStack.pushPose();
         poseStack.mulPose(Axis.YP.rotationDegrees(180.0F - entityYaw));
         
-        poseStack.scale(0.6F, 0.6F, 0.6F);
+        ItemStack appearance = entity.appearance();
+        float scale = appearance.is(ItemRegister.RUBBER_DUCK_DELUXE.get()) ? 0.38F : 0.6F;
+        poseStack.scale(scale, scale, scale);
         poseStack.translate(0.0D, 0.25D, 0.0D);
 
-        this.itemRenderer.renderStatic(new ItemStack(ItemRegister.RUBBER_DUCK.get()), ItemDisplayContext.GROUND, packedLight, OverlayTexture.NO_OVERLAY, poseStack, buffer, entity.level(), entity.getId());
+        this.itemRenderer.renderStatic(appearance, ItemDisplayContext.GROUND, packedLight, OverlayTexture.NO_OVERLAY, poseStack, buffer, entity.level(), entity.getId());
         
         poseStack.popPose();
         super.render(entity, entityYaw, partialTicks, poseStack, buffer, packedLight);

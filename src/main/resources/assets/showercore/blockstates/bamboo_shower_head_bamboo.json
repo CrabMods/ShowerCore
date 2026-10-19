@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "showercore:block/bamboo_shower_head_bamboo"
+    },
+    "facing=east": {
+      "model": "showercore:block/bamboo_shower_head_bamboo",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "showercore:block/bamboo_shower_head_bamboo",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "showercore:block/bamboo_shower_head_bamboo",
+      "y": 270
+    }
+  }
+}

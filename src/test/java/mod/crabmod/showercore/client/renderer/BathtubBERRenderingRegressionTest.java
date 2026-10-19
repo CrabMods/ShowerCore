@@ -149,12 +149,10 @@ class BathtubBERRenderingRegressionTest {
     @DisplayName("BER positions clawfoot faucet drops from the right-rim faucet side")
     void clawfootDropUsesRightRimSide() throws IOException {
         String source = TestSourceUtils.readSource(BER_SOURCE);
-        assertTrue(source.contains("facing.getClockWise()"),
-                "Clawfoot bathtubs put the faucet on the right rim, so the BER must use "
-                        + "FACING.getClockWise() for clawfoot drop placement instead of the legacy short end.");
-        assertTrue(source.contains("computeDropBounds(toFaucetSide(faucetSide), clawfoot)"),
-                "BER must pass the clawfoot flag into BathtubDropGeometry.computeDropBounds so "
-                        + "clawfoot drops use side-rim coordinates while legacy tubs keep the old coordinates.");
+        assertTrue(source.contains("BathtubBlock.geometryFor(state)"),
+                "Faucet placement must use the shape profile, including the clawfoot right-rim coordinates.");
+        assertTrue(source.contains("computeDropBounds(toFaucetSide(facing), BathtubBlock.geometryFor(state))"),
+                "BER must use the shared profile to rotate each shape's faucet coordinates.");
     }
 
     @Test

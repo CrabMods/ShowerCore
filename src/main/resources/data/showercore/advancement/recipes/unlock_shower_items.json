@@ -140,7 +140,18 @@
       "showercore:rain_shower_head_white",
       "showercore:rain_shower_head_yellow",
       "showercore:rose_bath_core",
-      "showercore:rubber_duck"
+      "showercore:rubber_duck",
+      "showercore:bathtub_ofuro_birch",
+      "showercore:bathtub_roman_white",
+      "showercore:bathtub_seashell_pink",
+      "showercore:bathtub_washtub_iron",
+      "showercore:bathtub_spa_white",
+      "showercore:bamboo_shower_head_bamboo",
+      "showercore:column_shower_head_white",
+      "showercore:coral_shower_head_pink",
+      "showercore:bucket_shower_head_spruce",
+      "showercore:panel_shower_head_white",
+      "showercore:rubber_duck_deluxe"
     ]
   },
   "criteria": {

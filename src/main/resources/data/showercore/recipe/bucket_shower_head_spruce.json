@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " B ",
+    "SCM",
+    "S  "
+  ],
+  "key": {
+    "S": {
+      "item": "minecraft:stick"
+    },
+    "B": {
+      "item": "minecraft:bucket"
+    },
+    "M": {
+      "item": "minecraft:spruce_planks"
+    },
+    "C": {
+      "item": "minecraft:chain"
+    }
+  },
+  "result": {
+    "id": "showercore:bucket_shower_head_spruce"
+  }
+}

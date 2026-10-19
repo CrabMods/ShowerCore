@@ -1,0 +1,7 @@
+{
+  "parent": "showercore:block/template/bathtub_roman_head_empty",
+  "textures": {
+    "body": "minecraft:block/white_concrete",
+    "particle": "minecraft:block/white_concrete"
+  }
+}

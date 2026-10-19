@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "X X",
+    "XXX",
+    " IX"
+  ],
+  "key": {
+    "X": {
+      "item": "minecraft:iron_block"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "result": {
+    "id": "showercore:bathtub_washtub_iron"
+  }
+}

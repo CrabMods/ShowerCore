@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " B ",
+    "SCM",
+    "S  "
+  ],
+  "key": {
+    "S": {
+      "item": "minecraft:stick"
+    },
+    "B": {
+      "item": "minecraft:bucket"
+    },
+    "M": {
+      "item": "minecraft:pink_concrete"
+    },
+    "C": {
+      "item": "minecraft:brain_coral"
+    }
+  },
+  "result": {
+    "id": "showercore:coral_shower_head_pink"
+  }
+}

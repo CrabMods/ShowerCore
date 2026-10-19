@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "X X",
+    "XXX",
+    " IX"
+  ],
+  "key": {
+    "X": {
+      "item": "minecraft:birch_planks"
+    },
+    "I": {
+      "item": "minecraft:bamboo"
+    }
+  },
+  "result": {
+    "id": "showercore:bathtub_ofuro_birch"
+  }
+}

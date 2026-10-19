@@ -29,7 +29,7 @@ class BathtubWaterLevelRegressionTest {
                 "Legacy bathtub water level should remain unchanged.");
         assertTrue(geometrySource.contains("CLAWFOOT_WATER_LEVEL = 0.74f"),
                 "Clawfoot bathtubs need a higher water surface to match their taller bowl.");
-        assertTrue(rendererSource.contains("BathtubBlock.isClawfootBathtub(state)"),
+        assertTrue(rendererSource.contains("BathtubBlock.geometryFor(state)"),
                 "The higher water level must be scoped to clawfoot bathtub block ids.");
         assertTrue(rendererSource.contains("BathtubBlock.waterLevelFor(state)"),
                 "The renderer should use the block-state-specific water level.");

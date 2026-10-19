@@ -31,12 +31,10 @@ class BathtubSeatHeightRegressionTest {
     @Test
     @DisplayName("Clawfoot bathtubs use a higher seat offset than legacy tubs")
     void clawfootUsesHigherSeatOffset() {
-        assertTrue(bathtubSource.contains("LEGACY_SEAT_Y_OFFSET = 0.1D"),
-                "Legacy tubs must keep the old seat height.");
-        assertTrue(bathtubSource.contains("CLAWFOOT_SEAT_Y_OFFSET = 0.32D"),
-                "Clawfoot tubs are taller and need their own higher seat height.");
-        assertTrue(bathtubSource.contains("startsWith(\"bathtub_clawfoot_\")"),
-                "Seat height selection must key off the clawfoot block id family.");
+        org.junit.jupiter.api.Assertions.assertEquals(.1, mod.crabmod.showercore.geometry.BathroomGeometry.STANDARD_TUB.seatOffset());
+        org.junit.jupiter.api.Assertions.assertEquals(.32, mod.crabmod.showercore.geometry.BathroomGeometry.CLAWFOOT_TUB.seatOffset());
+        assertTrue(bathtubSource.contains("geometryFor(state).seatOffset()"),
+                "All shapes must use their geometry profile for sitting.");
     }
 
     @Test

@@ -1,0 +1,544 @@
+{
+  "variants": {
+    "facing=north,part=head,liquid=empty,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_empty"
+    },
+    "facing=north,part=foot,liquid=empty,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty"
+    },
+    "facing=north,part=head,liquid=empty,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_empty"
+    },
+    "facing=north,part=foot,liquid=empty,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty"
+    },
+    "facing=north,part=head,liquid=water,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_empty"
+    },
+    "facing=north,part=foot,liquid=water,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty"
+    },
+    "facing=north,part=head,liquid=water,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_faucet"
+    },
+    "facing=north,part=foot,liquid=water,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty"
+    },
+    "facing=north,part=head,liquid=hot_water,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_empty"
+    },
+    "facing=north,part=foot,liquid=hot_water,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty"
+    },
+    "facing=north,part=head,liquid=hot_water,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_faucet"
+    },
+    "facing=north,part=foot,liquid=hot_water,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty"
+    },
+    "facing=north,part=head,liquid=herbal_bath,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_empty"
+    },
+    "facing=north,part=foot,liquid=herbal_bath,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty"
+    },
+    "facing=north,part=head,liquid=herbal_bath,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_faucet"
+    },
+    "facing=north,part=foot,liquid=herbal_bath,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty"
+    },
+    "facing=north,part=head,liquid=honey_bath,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_empty"
+    },
+    "facing=north,part=foot,liquid=honey_bath,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty"
+    },
+    "facing=north,part=head,liquid=honey_bath,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_faucet"
+    },
+    "facing=north,part=foot,liquid=honey_bath,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty"
+    },
+    "facing=north,part=head,liquid=milk_bath,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_empty"
+    },
+    "facing=north,part=foot,liquid=milk_bath,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty"
+    },
+    "facing=north,part=head,liquid=milk_bath,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_faucet"
+    },
+    "facing=north,part=foot,liquid=milk_bath,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty"
+    },
+    "facing=north,part=head,liquid=peony_bath,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_empty"
+    },
+    "facing=north,part=foot,liquid=peony_bath,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty"
+    },
+    "facing=north,part=head,liquid=peony_bath,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_faucet"
+    },
+    "facing=north,part=foot,liquid=peony_bath,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty"
+    },
+    "facing=north,part=head,liquid=rose_bath,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_empty"
+    },
+    "facing=north,part=foot,liquid=rose_bath,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty"
+    },
+    "facing=north,part=head,liquid=rose_bath,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_faucet"
+    },
+    "facing=north,part=foot,liquid=rose_bath,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty"
+    },
+    "facing=north,part=head,liquid=custom,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_empty"
+    },
+    "facing=north,part=foot,liquid=custom,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty"
+    },
+    "facing=north,part=head,liquid=custom,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_empty"
+    },
+    "facing=north,part=foot,liquid=custom,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty"
+    },
+    "facing=east,part=head,liquid=empty,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_empty",
+      "y": 90
+    },
+    "facing=east,part=foot,liquid=empty,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 90
+    },
+    "facing=east,part=head,liquid=empty,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_empty",
+      "y": 90
+    },
+    "facing=east,part=foot,liquid=empty,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 90
+    },
+    "facing=east,part=head,liquid=water,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_empty",
+      "y": 90
+    },
+    "facing=east,part=foot,liquid=water,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 90
+    },
+    "facing=east,part=head,liquid=water,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_faucet",
+      "y": 90
+    },
+    "facing=east,part=foot,liquid=water,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 90
+    },
+    "facing=east,part=head,liquid=hot_water,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_empty",
+      "y": 90
+    },
+    "facing=east,part=foot,liquid=hot_water,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 90
+    },
+    "facing=east,part=head,liquid=hot_water,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_faucet",
+      "y": 90
+    },
+    "facing=east,part=foot,liquid=hot_water,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 90
+    },
+    "facing=east,part=head,liquid=herbal_bath,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_empty",
+      "y": 90
+    },
+    "facing=east,part=foot,liquid=herbal_bath,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 90
+    },
+    "facing=east,part=head,liquid=herbal_bath,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_faucet",
+      "y": 90
+    },
+    "facing=east,part=foot,liquid=herbal_bath,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 90
+    },
+    "facing=east,part=head,liquid=honey_bath,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_empty",
+      "y": 90
+    },
+    "facing=east,part=foot,liquid=honey_bath,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 90
+    },
+    "facing=east,part=head,liquid=honey_bath,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_faucet",
+      "y": 90
+    },
+    "facing=east,part=foot,liquid=honey_bath,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 90
+    },
+    "facing=east,part=head,liquid=milk_bath,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_empty",
+      "y": 90
+    },
+    "facing=east,part=foot,liquid=milk_bath,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 90
+    },
+    "facing=east,part=head,liquid=milk_bath,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_faucet",
+      "y": 90
+    },
+    "facing=east,part=foot,liquid=milk_bath,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 90
+    },
+    "facing=east,part=head,liquid=peony_bath,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_empty",
+      "y": 90
+    },
+    "facing=east,part=foot,liquid=peony_bath,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 90
+    },
+    "facing=east,part=head,liquid=peony_bath,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_faucet",
+      "y": 90
+    },
+    "facing=east,part=foot,liquid=peony_bath,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 90
+    },
+    "facing=east,part=head,liquid=rose_bath,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_empty",
+      "y": 90
+    },
+    "facing=east,part=foot,liquid=rose_bath,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 90
+    },
+    "facing=east,part=head,liquid=rose_bath,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_faucet",
+      "y": 90
+    },
+    "facing=east,part=foot,liquid=rose_bath,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 90
+    },
+    "facing=east,part=head,liquid=custom,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_empty",
+      "y": 90
+    },
+    "facing=east,part=foot,liquid=custom,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 90
+    },
+    "facing=east,part=head,liquid=custom,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_empty",
+      "y": 90
+    },
+    "facing=east,part=foot,liquid=custom,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 90
+    },
+    "facing=south,part=head,liquid=empty,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_empty",
+      "y": 180
+    },
+    "facing=south,part=foot,liquid=empty,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 180
+    },
+    "facing=south,part=head,liquid=empty,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_empty",
+      "y": 180
+    },
+    "facing=south,part=foot,liquid=empty,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 180
+    },
+    "facing=south,part=head,liquid=water,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_empty",
+      "y": 180
+    },
+    "facing=south,part=foot,liquid=water,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 180
+    },
+    "facing=south,part=head,liquid=water,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_faucet",
+      "y": 180
+    },
+    "facing=south,part=foot,liquid=water,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 180
+    },
+    "facing=south,part=head,liquid=hot_water,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_empty",
+      "y": 180
+    },
+    "facing=south,part=foot,liquid=hot_water,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 180
+    },
+    "facing=south,part=head,liquid=hot_water,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_faucet",
+      "y": 180
+    },
+    "facing=south,part=foot,liquid=hot_water,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 180
+    },
+    "facing=south,part=head,liquid=herbal_bath,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_empty",
+      "y": 180
+    },
+    "facing=south,part=foot,liquid=herbal_bath,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 180
+    },
+    "facing=south,part=head,liquid=herbal_bath,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_faucet",
+      "y": 180
+    },
+    "facing=south,part=foot,liquid=herbal_bath,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 180
+    },
+    "facing=south,part=head,liquid=honey_bath,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_empty",
+      "y": 180
+    },
+    "facing=south,part=foot,liquid=honey_bath,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 180
+    },
+    "facing=south,part=head,liquid=honey_bath,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_faucet",
+      "y": 180
+    },
+    "facing=south,part=foot,liquid=honey_bath,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 180
+    },
+    "facing=south,part=head,liquid=milk_bath,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_empty",
+      "y": 180
+    },
+    "facing=south,part=foot,liquid=milk_bath,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 180
+    },
+    "facing=south,part=head,liquid=milk_bath,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_faucet",
+      "y": 180
+    },
+    "facing=south,part=foot,liquid=milk_bath,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 180
+    },
+    "facing=south,part=head,liquid=peony_bath,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_empty",
+      "y": 180
+    },
+    "facing=south,part=foot,liquid=peony_bath,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 180
+    },
+    "facing=south,part=head,liquid=peony_bath,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_faucet",
+      "y": 180
+    },
+    "facing=south,part=foot,liquid=peony_bath,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 180
+    },
+    "facing=south,part=head,liquid=rose_bath,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_empty",
+      "y": 180
+    },
+    "facing=south,part=foot,liquid=rose_bath,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 180
+    },
+    "facing=south,part=head,liquid=rose_bath,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_faucet",
+      "y": 180
+    },
+    "facing=south,part=foot,liquid=rose_bath,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 180
+    },
+    "facing=south,part=head,liquid=custom,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_empty",
+      "y": 180
+    },
+    "facing=south,part=foot,liquid=custom,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 180
+    },
+    "facing=south,part=head,liquid=custom,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_empty",
+      "y": 180
+    },
+    "facing=south,part=foot,liquid=custom,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 180
+    },
+    "facing=west,part=head,liquid=empty,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_empty",
+      "y": 270
+    },
+    "facing=west,part=foot,liquid=empty,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 270
+    },
+    "facing=west,part=head,liquid=empty,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_empty",
+      "y": 270
+    },
+    "facing=west,part=foot,liquid=empty,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 270
+    },
+    "facing=west,part=head,liquid=water,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_empty",
+      "y": 270
+    },
+    "facing=west,part=foot,liquid=water,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 270
+    },
+    "facing=west,part=head,liquid=water,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_faucet",
+      "y": 270
+    },
+    "facing=west,part=foot,liquid=water,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 270
+    },
+    "facing=west,part=head,liquid=hot_water,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_empty",
+      "y": 270
+    },
+    "facing=west,part=foot,liquid=hot_water,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 270
+    },
+    "facing=west,part=head,liquid=hot_water,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_faucet",
+      "y": 270
+    },
+    "facing=west,part=foot,liquid=hot_water,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 270
+    },
+    "facing=west,part=head,liquid=herbal_bath,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_empty",
+      "y": 270
+    },
+    "facing=west,part=foot,liquid=herbal_bath,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 270
+    },
+    "facing=west,part=head,liquid=herbal_bath,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_faucet",
+      "y": 270
+    },
+    "facing=west,part=foot,liquid=herbal_bath,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 270
+    },
+    "facing=west,part=head,liquid=honey_bath,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_empty",
+      "y": 270
+    },
+    "facing=west,part=foot,liquid=honey_bath,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 270
+    },
+    "facing=west,part=head,liquid=honey_bath,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_faucet",
+      "y": 270
+    },
+    "facing=west,part=foot,liquid=honey_bath,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 270
+    },
+    "facing=west,part=head,liquid=milk_bath,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_empty",
+      "y": 270
+    },
+    "facing=west,part=foot,liquid=milk_bath,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 270
+    },
+    "facing=west,part=head,liquid=milk_bath,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_faucet",
+      "y": 270
+    },
+    "facing=west,part=foot,liquid=milk_bath,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 270
+    },
+    "facing=west,part=head,liquid=peony_bath,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_empty",
+      "y": 270
+    },
+    "facing=west,part=foot,liquid=peony_bath,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 270
+    },
+    "facing=west,part=head,liquid=peony_bath,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_faucet",
+      "y": 270
+    },
+    "facing=west,part=foot,liquid=peony_bath,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 270
+    },
+    "facing=west,part=head,liquid=rose_bath,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_empty",
+      "y": 270
+    },
+    "facing=west,part=foot,liquid=rose_bath,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 270
+    },
+    "facing=west,part=head,liquid=rose_bath,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_faucet",
+      "y": 270
+    },
+    "facing=west,part=foot,liquid=rose_bath,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 270
+    },
+    "facing=west,part=head,liquid=custom,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_empty",
+      "y": 270
+    },
+    "facing=west,part=foot,liquid=custom,running=false": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 270
+    },
+    "facing=west,part=head,liquid=custom,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_head_empty",
+      "y": 270
+    },
+    "facing=west,part=foot,liquid=custom,running=true": {
+      "model": "showercore:block/bathtub_ofuro_birch_foot_empty",
+      "y": 270
+    }
+  }
+}

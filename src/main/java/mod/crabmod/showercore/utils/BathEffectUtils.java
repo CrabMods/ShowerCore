@@ -1,6 +1,7 @@
 package mod.crabmod.showercore.utils;
 
 import java.util.ArrayList;
+import net.minecraft.world.phys.Vec3;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -38,10 +39,10 @@ public class BathEffectUtils {
         }
     }
 
-    public void renderBathWater(Level level, BlockPos pos, java.util.function.Supplier<ParticleOptions> particleTypeSupplier, double width, double depth, double centerX, double centerZ, double height) {
+    public void renderBathWater(Level level, Vec3 origin, java.util.function.Supplier<ParticleOptions> particleTypeSupplier, double width, double depth) {
         if (isEffectActive.get()) return;
-        renderBathWater(level, pos, 2, 0.4, 4, particleTypeSupplier, width, depth, centerX, centerZ, height);
-        playBathSound(level, 200, pos);
+        renderBathWater(level, origin, 2, particleTypeSupplier, width, depth);
+        playBathSound(level, 200, origin);
     }
 
     private void generateOuterSteamParticles(Level worldIn, BlockPos pos, RandomSource rand, int radius) {
@@ -78,7 +79,7 @@ public class BathEffectUtils {
         }
     }
 
-    public void renderBathWater(Level level, BlockPos pos, int particleInterval, double invisibleHeightMinOffset, double invisibleHeightMaxOffset, java.util.function.Supplier<ParticleOptions> particleTypeSupplier, double width, double depth, double centerX, double centerZ, double height) {
+    public void renderBathWater(Level level, Vec3 origin, int particleInterval, java.util.function.Supplier<ParticleOptions> particleTypeSupplier, double width, double depth) {
         // If the effect is already active, return to avoid duplicate start
         if (isEffectActive.get()) {
             return;
@@ -104,31 +105,31 @@ public class BathEffectUtils {
 
                     Minecraft.getInstance().execute(() -> {
                         // Set relative height range
-                        double invisibleHeightMin = pos.getY() + invisibleHeightMinOffset;
-                        double invisibleHeightMax = pos.getY() + invisibleHeightMaxOffset;
+                        double invisibleHeightMin = origin.y - 0.38;
+                        double invisibleHeightMax = origin.y + 3.22;
 
                         // Set height range to ThreadLocal
                         ShowerParticle.INVISIBLE_HEIGHT_MIN.set(invisibleHeightMin);
                         ShowerParticle.INVISIBLE_HEIGHT_MAX.set(invisibleHeightMax);
 
                         for (int i = 0; i < 1; i++) {
-                            double offsetX = centerX + (level.random.nextDouble() - 0.5) * width;
-                            double offsetY = height;
-                            double offsetZ = centerZ + (level.random.nextDouble() - 0.5) * depth;
+                            double offsetX = origin.x + (level.random.nextDouble() - 0.5) * width;
+                            double offsetY = origin.y;
+                            double offsetZ = origin.z + (level.random.nextDouble() - 0.5) * depth;
                             double velocityY = 3;
                             // Add particle
                             level.addParticle(
                                     particleTypeSupplier.get(),
-                                    pos.getX() + offsetX,
-                                    pos.getY() + offsetY,
-                                    pos.getZ() + offsetZ,
+                                    offsetX,
+                                    offsetY,
+                                    offsetZ,
                                     0,
                                     velocityY,
                                     0
                             );
 
                             if (level.random.nextInt(5000) == 0) {
-                                this.generateOuterSteamParticles(level, pos, level.random, 1);
+                                this.generateOuterSteamParticles(level, BlockPos.containing(origin), level.random, 1);
                             }
                         }
 
@@ -143,7 +144,7 @@ public class BathEffectUtils {
         );
     }
 
-    public void playBathSound(Level level, int soundInterval, BlockPos pos) {
+    public void playBathSound(Level level, int soundInterval, Vec3 origin) {
         ensureScheduler();
         // Periodically play sound effects
         scheduler.scheduleAtFixedRate(
@@ -170,7 +171,7 @@ public class BathEffectUtils {
                                 0.2F,
                                 1.0F,
                                 RandomSource.create(),
-                                pos
+                                origin
                         );
                         Minecraft.getInstance().getSoundManager().play(soundInstance);
                         activeSounds.add(soundInstance);
@@ -206,13 +207,13 @@ public class BathEffectUtils {
         private final int fadeDuration = 20; // 1 second
         private final float originalVolume;
 
-        public FadeableSoundInstance(SoundEvent sound, SoundSource source, float volume, float pitch, RandomSource random, BlockPos pos) {
+        public FadeableSoundInstance(SoundEvent sound, SoundSource source, float volume, float pitch, RandomSource random, Vec3 origin) {
             super(sound, source, random);
             this.volume = volume;
             this.pitch = pitch;
-            this.x = pos.getX() + 0.5;
-            this.y = pos.getY() + 0.5;
-            this.z = pos.getZ() + 0.5;
+            this.x = origin.x;
+            this.y = origin.y;
+            this.z = origin.z;
             this.originalVolume = volume;
         }
 

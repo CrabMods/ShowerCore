@@ -282,7 +282,7 @@ def generate(project, output):
         data, counts[name] = obj(faces, offset)
         (mesh / f'{name}.obj').write_text(data, encoding='utf-8', newline='\n')
     material_names = ('body', 'base', 'feet', 'faucet', 'button_base', 'hot_button', 'cold_button')
-    materials = '\n\n'.join(f'newmtl {name}\nKd 1 1 1\nmap_Kd #{name}' for name in material_names) + '\n'
+    materials = '\n\n'.join(f'newmtl {name}\nKd 1 1 1\nforge_TintIndex {1 if name == "base" else -1}\nmap_Kd #{name}' for name in material_names) + '\n'
     (mesh / 'clawfoot.mtl').write_text(materials, encoding='utf-8', newline='\n')
     textures = {'base': 'minecraft:block/polished_deepslate', 'feet': 'minecraft:block/blackstone',
                 'faucet': 'minecraft:block/polished_blackstone', 'button_base': 'minecraft:block/andesite',

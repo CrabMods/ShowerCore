@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "X X",
+    "XXX",
+    " IX"
+  ],
+  "key": {
+    "X": {
+      "item": "minecraft:quartz_block"
+    },
+    "I": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "result": {
+    "id": "showercore:bathtub_spa_white"
+  }
+}

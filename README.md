@@ -71,9 +71,19 @@ For when standing is just too much effort.
   - **Note:** Don't run away! You must be within **5 blocks** to join.
   - The other player must remain seated and the second seat must be free.
 
-### Custom Bathtub Textures
+### Materials and bathroom styles
 
-Match a bathtub to your build using vanilla or modded block textures. Hold the bathtub item in one hand and at least **6 identical blocks** in the other, then use the item before placing it. Survival consumes 6 blocks when the material changes; Creative is free.
+Use a bathtub or shower item in the air to open the material menu. For a duck, sneak-use it in the air. Add a material block from your inventory and choose its side or top texture. A bathtub material change costs six blocks; a shower or duck costs one. Changing only the texture face is free. The chosen material covers the complete body, including the bathtub floor and inner walls.
+
+The creative tab lists seven bathtub styles, seven shower styles and two duck skins, with materials chosen through the menu. Existing material variants and saved items remain compatible. Right-click a bathtub's top or side with a shower to install it at the correct rim height.
+
+## Configurable Bathing Pools
+
+Craft a reusable pool planner with paper, a stick and an iron ingot. Use it in the air to choose Rectangle, Rounded or Circle, a material sample, and dimensions from 3 to 16 blocks per side. Pools have one-block height. Click the ground for an outline, then click inside it again to build. Fit room uses two corners followed by confirmation; the menu shows the material cost.
+
+Use buckets on any pool block to change its shared water level. Empty-hand click inside or on the rim to sit; several players can use different seats. Sneak to stand up. Showers follow the rim height and both duck skins float within the basin. Use the planner on an existing pool to change its complete finish while preserving water and occupied seats; previously paid material is returned, and side/top texture changes are free.
+
+Break a member to dismantle the pool and return paid construction materials once. Liquid is not recovered into the planner. To change its size or shape, dismantle and rebuild.
 
 ## The Rubber Duck
 

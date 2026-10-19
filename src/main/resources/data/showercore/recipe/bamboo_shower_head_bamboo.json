@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " B ",
+    "SCM",
+    "S  "
+  ],
+  "key": {
+    "S": {
+      "item": "minecraft:stick"
+    },
+    "B": {
+      "item": "minecraft:bucket"
+    },
+    "M": {
+      "item": "minecraft:bamboo_planks"
+    },
+    "C": {
+      "item": "minecraft:bamboo"
+    }
+  },
+  "result": {
+    "id": "showercore:bamboo_shower_head_bamboo"
+  }
+}

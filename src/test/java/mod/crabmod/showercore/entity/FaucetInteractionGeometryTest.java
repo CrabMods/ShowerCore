@@ -90,7 +90,7 @@ class FaucetInteractionGeometryTest {
 
         assertTrue(source.contains("spawnFaucetInteractionEntities(level, blockpos, state)"),
                 "Bathtub placement must centralize faucet entity spawning.");
-        assertTrue(source.contains("FaucetInteractionGeometry.hitboxOrigins(isClawfootBathtub(state))"),
+        assertTrue(source.contains("geometryFor(state).faucets()"),
                 "Clawfoot bathtubs must use the side-rim interaction hitboxes.");
         assertFalse(source.contains("case NORTH: x += 0.5; y += 0.78; z += 0.125"),
                 "The old single hard-coded hitbox misses clawfoot side controls.");

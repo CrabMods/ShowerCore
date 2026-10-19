@@ -2,6 +2,9 @@
 package mod.crabmod.showercore.block;
 
 import java.util.Collections;
+import mod.crabmod.showercore.geometry.BathroomGeometry;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import java.util.List;
 import javax.annotation.Nullable;
 import mod.crabmod.showercore.base.RotatableBlock;
@@ -59,15 +62,27 @@ public class ShowerHeadBlock extends RotatableBlock implements EntityBlock, Simp
 
   public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
 
+  public static final IntegerProperty MOUNT_OFFSET =
+      IntegerProperty.create("mount_offset", 0, 30);
+  private final BathroomGeometry.Shower geometry;
+  private final java.util.Map<Direction, VoxelShape> outlines;
+
   public ShowerHeadBlock(Properties properties) {
+    this(properties, BathroomGeometry.RAIN_SHOWER);
+  }
+
+  public ShowerHeadBlock(Properties properties, BathroomGeometry.Shower geometry) {
     super(properties);
-    this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(WATERLOGGED, false));
+    this.geometry = geometry;
+    var bounds = geometry.bounds();
+    this.outlines = createShapeMap(box(bounds.minX(), bounds.minY(), bounds.minZ(), bounds.maxX(), bounds.maxY(), bounds.maxZ()));
+    this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(WATERLOGGED, false).setValue(MOUNT_OFFSET, 15));
   }
 
   @Override
   protected void createBlockStateDefinition(StateDefinition.Builder<net.minecraft.world.level.block.Block, BlockState> builder) {
     super.createBlockStateDefinition(builder);
-    builder.add(WATERLOGGED);
+    builder.add(WATERLOGGED, MOUNT_OFFSET);
   }
 
   @Nullable
@@ -113,6 +128,47 @@ public class ShowerHeadBlock extends RotatableBlock implements EntityBlock, Simp
   @Override
   protected VoxelShape getBaseShape() {
     return Shapes.or(box(2.75, -16, 5.5, 13, 15, 16));
+  }
+
+  public BathroomGeometry.Shower geometry() { return geometry; }
+
+  // Native integer properties are unsigned. Keep the wire encoding behind these accessors.
+  public static int mountOffsetPixels(BlockState state) { return state.getValue(MOUNT_OFFSET) - 15; }
+
+  public static BlockState withMountOffset(BlockState state, int pixels) { return state.setValue(MOUNT_OFFSET, pixels + 15); }
+
+  public static double mountOffset(BlockState state) { return mountOffsetPixels(state) / 16.0; }
+
+  @Override
+  public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    float x=0,z=0;
+    if(level.getBlockEntity(pos) instanceof ShowerHeadContainerEntity shower){x=shower.horizontalMount().x();z=shower.horizontalMount().z();}
+    return outlines.get(state.getValue(FACING)).move(x, mountOffset(state), z);
+  }
+
+  public Vec3 sprayOrigin(BlockPos pos, BlockState state) {
+    double x = geometry.outletX() / 16.0;
+    double z = geometry.outletZ() / 16.0;
+    var local = switch (state.getValue(FACING)) {
+      case EAST -> new Vec3(1-z, 0, x);
+      case SOUTH -> new Vec3(1-x, 0, 1-z);
+      case WEST -> new Vec3(z, 0, 1-x);
+      default -> new Vec3(x, 0, z);
+    };
+    return local.add(pos.getX(), pos.getY() + mountOffset(state) + geometry.outletY() / 16.0, pos.getZ());
+  }
+
+  public Vec3 sprayOrigin(BlockGetter level, BlockPos pos, BlockState state) {
+    var origin=sprayOrigin(pos,state);
+    return level.getBlockEntity(pos) instanceof ShowerHeadContainerEntity shower?origin.add(shower.horizontalMount().x(),0,shower.horizontalMount().z()):origin;
+  }
+
+  public double sprayWidth(BlockState state) {
+    return (state.getValue(FACING).getAxis() == Direction.Axis.X ? geometry.depth() : geometry.width()) / 16.0;
+  }
+
+  public double sprayDepth(BlockState state) {
+    return (state.getValue(FACING).getAxis() == Direction.Axis.X ? geometry.width() : geometry.depth()) / 16.0;
   }
 
   @Override
@@ -261,6 +317,7 @@ public class ShowerHeadBlock extends RotatableBlock implements EntityBlock, Simp
       BlockEntity blockEntity = level.getBlockEntity(pos);
       if (blockEntity instanceof ShowerHeadContainerEntity showerEntity) {
           CompoundTag tag = showerEntity.saveWithoutMetadata(level.registryAccess());
+          tag.remove("MountX");tag.remove("MountZ");
           BlockItem.setBlockEntityData(stack, blockEntity.getType(), tag);
       }
       return stack;
@@ -272,6 +329,7 @@ public class ShowerHeadBlock extends RotatableBlock implements EntityBlock, Simp
     if (blockEntity instanceof ShowerHeadContainerEntity showerEntity) {
       ItemStack stack = new ItemStack(this);
       CompoundTag tag = showerEntity.saveWithoutMetadata(showerEntity.getLevel().registryAccess());
+      tag.remove("MountX");tag.remove("MountZ");
       BlockItem.setBlockEntityData(stack, blockEntity.getType(), tag);
       return Collections.singletonList(stack);
     }
@@ -298,6 +356,7 @@ public class ShowerHeadBlock extends RotatableBlock implements EntityBlock, Simp
         }
     }
     
+    tooltip.add(Component.translatable("tooltip.showercore.material.usage"));
     tooltip.add(Component.translatable("tooltip.showercore.shower_head.usage.install"));
     tooltip.add(Component.translatable("tooltip.showercore.shower_head.usage.toggle"));
     tooltip.add(Component.translatable("tooltip.showercore.shower_head.usage.remove"));

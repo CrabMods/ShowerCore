@@ -26,6 +26,7 @@ import java.util.Optional;
 public class CoreUtils {
 
     public static boolean isEntityInBathtub(Entity entity, BathtubBlock.LiquidType liquidType) {
+        if (mod.crabmod.showercore.pool.PoolContact.bathing(entity, p -> p.liquidType() == liquidType)) return true;
         if (entity.getVehicle() instanceof SeatEntity) {
              return checkBathtubAt(entity.level(), entity.getVehicle().blockPosition(), liquidType);
         }
@@ -38,6 +39,7 @@ public class CoreUtils {
     }
 
     public static boolean isEntityInAnyHotBathtub(Entity entity) {
+        if (mod.crabmod.showercore.pool.PoolContact.bathing(entity, mod.crabmod.showercore.pool.PoolBlockEntity::isHot)) return true;
         if (entity.getVehicle() instanceof SeatEntity) {
              return checkAnyHotBathtubAt(entity.level(), entity.getVehicle().blockPosition());
         }
@@ -119,7 +121,7 @@ public class CoreUtils {
      */
     public static boolean isCustomFluidHotAt(Level level, BlockPos pos) {
         BlockEntity be = level.getBlockEntity(pos);
-        if (be instanceof BathtubBlockEntity bathtubBe) {
+        if (be instanceof mod.crabmod.showercore.pool.BathFluidSource bathtubBe) {
             Optional<CustomFluidDefinition> defOpt = bathtubBe.getCustomFluidDefinition();
             return defOpt.map(CustomFluidDefinition::isHot).orElse(false);
         }
@@ -130,6 +132,7 @@ public class CoreUtils {
      * Checks if the entity is in a bathtub containing a CUSTOM fluid that is hot.
      */
     public static boolean isEntityInHotCustomBathtub(Entity entity) {
+        if (mod.crabmod.showercore.pool.PoolContact.bathing(entity, p -> p.liquidType() == BathtubBlock.LiquidType.CUSTOM && p.isHot())) return true;
         if (entity.getVehicle() instanceof SeatEntity seatEntity) {
             BlockPos pos = seatEntity.blockPosition();
             return checkBathtubAt(entity.level(), pos, BathtubBlock.LiquidType.CUSTOM)
@@ -169,6 +172,7 @@ public class CoreUtils {
     }
 
     private static boolean isEntityInBuiltInHotBathtub(Entity entity) {
+        if (mod.crabmod.showercore.pool.PoolContact.bathing(entity, p -> p.liquidType() != BathtubBlock.LiquidType.CUSTOM && p.isHot())) return true;
         if (entity.getVehicle() instanceof SeatEntity) {
             return checkBuiltInHotBathtubAt(entity.level(), entity.getVehicle().blockPosition());
         }
@@ -196,10 +200,12 @@ public class CoreUtils {
      * For built-in hot liquids and shower heads, returns the default 40.0f.
      */
     public static float getShowerCoreBathTemperature(Entity player) {
+        var pool = mod.crabmod.showercore.pool.PoolContact.find(player, p -> p.getCustomFluidId() != null);
+        if(pool != null)return pool.getCustomFluidDefinition().map(f -> f.temperature()).orElse(40.0f);
         Entity vehicle = player.getVehicle();
         BlockPos pos = vehicle instanceof SeatEntity ? vehicle.blockPosition() : player.blockPosition();
         BlockEntity be = player.level().getBlockEntity(pos);
-        if (be instanceof BathtubBlockEntity bathtubBe) {
+        if (be instanceof mod.crabmod.showercore.pool.BathFluidSource bathtubBe) {
             Optional<CustomFluidDefinition> defOpt = bathtubBe.getCustomFluidDefinition();
             if (defOpt.isPresent()) {
                 return defOpt.get().temperature();

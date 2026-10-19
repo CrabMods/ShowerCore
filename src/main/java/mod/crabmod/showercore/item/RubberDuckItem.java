@@ -38,6 +38,7 @@ public class RubberDuckItem extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+        tooltip.add(Component.translatable("tooltip.showercore.material.usage"));
         tooltip.add(Component.translatable("tooltip.showercore.rubber_duck.usage.place"));
         tooltip.add(Component.translatable("tooltip.showercore.rubber_duck.usage.push"));
         tooltip.add(Component.translatable("tooltip.showercore.rubber_duck.usage.pickup"));
@@ -47,6 +48,12 @@ public class RubberDuckItem extends Item {
     @Override
     public InteractionResult useOn(UseOnContext context) {
         Level level = context.getLevel();
+        if (context.getPlayer() != null && context.getPlayer().isShiftKeyDown()) {
+            mod.crabmod.showercore.material.BathroomMaterials.open(level, context.getPlayer(), context.getHand());
+            return InteractionResult.sidedSuccess(level.isClientSide);
+        }
+        if (level.getBlockState(context.getClickedPos()).getBlock() instanceof mod.crabmod.showercore.pool.PoolBlock
+                && (!(level.getBlockEntity(context.getClickedPos()) instanceof mod.crabmod.showercore.pool.PoolBlockEntity pool) || pool.controller() == null)) return InteractionResult.CONSUME;
         Vec3 pos = context.getClickLocation();
         Direction direction = context.getClickedFace();
         if (direction.getAxis().isHorizontal()) {
@@ -56,6 +63,7 @@ public class RubberDuckItem extends Item {
 
         RubberDuckEntity duck = new RubberDuckEntity(level, pos.x, pos.y, pos.z);
         duck.setYRot(context.getRotation());
+        duck.setAppearance(context.getItemInHand());
 
         if (!level.noCollision(duck, duck.getBoundingBox())) {
             return InteractionResult.FAIL;
@@ -63,13 +71,14 @@ public class RubberDuckItem extends Item {
 
         if (!level.isClientSide) {
             level.addFreshEntity(duck);
-            context.getItemInHand().shrink(1);
+            if (context.getPlayer() == null || !context.getPlayer().getAbilities().instabuild) context.getItemInHand().shrink(1);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
+        if (player.isShiftKeyDown()) return mod.crabmod.showercore.material.BathroomMaterials.open(level, player, hand);
         ItemStack itemstack = player.getItemInHand(hand);
         HitResult hitresult = getPlayerPOVHitResult(level, player, ClipContext.Fluid.ANY);
         if (hitresult.getType() == HitResult.Type.MISS) {
@@ -90,6 +99,8 @@ public class RubberDuckItem extends Item {
 
             if (hitresult.getType() == HitResult.Type.BLOCK) {
                 net.minecraft.world.phys.BlockHitResult blockHitResult = (net.minecraft.world.phys.BlockHitResult) hitresult;
+                if (level.getBlockState(blockHitResult.getBlockPos()).getBlock() instanceof mod.crabmod.showercore.pool.PoolBlock
+                        && (!(level.getBlockEntity(blockHitResult.getBlockPos()) instanceof mod.crabmod.showercore.pool.PoolBlockEntity pool) || pool.controller() == null)) return InteractionResultHolder.fail(itemstack);
                 Direction direction = blockHitResult.getDirection();
                 Vec3 pos = hitresult.getLocation();
                 if (direction.getAxis().isHorizontal()) {
@@ -99,6 +110,7 @@ public class RubberDuckItem extends Item {
 
                 RubberDuckEntity duck = new RubberDuckEntity(level, pos.x, pos.y, pos.z);
                 duck.setYRot(player.getYRot());
+                duck.setAppearance(itemstack);
                 if (!level.noCollision(duck, duck.getBoundingBox())) {
                     return InteractionResultHolder.fail(itemstack);
                 } else {
@@ -123,6 +135,11 @@ public class RubberDuckItem extends Item {
         BlockState clickedState = level.getBlockState(clickedPos);
         if (clickedState.getBlock() instanceof BathtubBlock) {
             return BathtubBlock.duckPlacementFor(clickedPos, clickedState, pos);
+        }
+        if (level.getBlockEntity(clickedPos) instanceof mod.crabmod.showercore.pool.PoolBlockEntity pool && pool.configured()) {
+            var p=pool.layout().clampToInterior(pos.x-pool.origin().getX(),pos.z-pool.origin().getZ(),.5);
+            double y=pool.fluid().isEmpty()?mod.crabmod.showercore.pool.PoolSpec.FLOOR_Y:pool.waterY();
+            return new Vec3(pool.origin().getX()+p.x(),pool.origin().getY()+y+.05,pool.origin().getZ()+p.z());
         }
         return pos;
     }

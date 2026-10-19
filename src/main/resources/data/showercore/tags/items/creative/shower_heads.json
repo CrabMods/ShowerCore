@@ -66,6 +66,11 @@
     "showercore:compact_shower_head_crimson",
     "showercore:compact_shower_head_warped",
     "showercore:compact_shower_head_cobblestone",
-    "showercore:compact_shower_head_copper"
+    "showercore:compact_shower_head_copper",
+    "showercore:bamboo_shower_head_bamboo",
+    "showercore:column_shower_head_white",
+    "showercore:coral_shower_head_pink",
+    "showercore:bucket_shower_head_spruce",
+    "showercore:panel_shower_head_white"
   ]
 }

@@ -1,0 +1,7 @@
+{
+  "parent": "showercore:block/template/coral_shower_head",
+  "textures": {
+    "body": "showercore:block/bathroom/shell_ivory",
+    "particle": "showercore:block/bathroom/shell_ivory"
+  }
+}

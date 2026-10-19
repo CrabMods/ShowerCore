@@ -50,12 +50,21 @@ import com.crabmod.hotbath.custom_fluid.CustomFluidAPI;
 public class ClientEvent {
 
   @SubscribeEvent
+  public static void registerScreens(net.neoforged.neoforge.client.event.RegisterMenuScreensEvent event) {
+    event.register(mod.crabmod.showercore.registers.MenuRegister.BATHTUB_MATERIAL.get(),
+        mod.crabmod.showercore.client.screen.BathtubMaterialScreen::new);
+    event.register(mod.crabmod.showercore.registers.MenuRegister.POOL_CONFIGURATION.get(),
+        mod.crabmod.showercore.client.screen.PoolConfigurationScreen::new);
+  }
+
+  @SubscribeEvent
   public static void modifyBakingResult(ModelEvent.ModifyBakingResult event) {
     DynamicBathtubMaterialModel.clearCache();
-    event.getModels().replaceAll((location, model) ->
-        DynamicBathtubMaterialModel.shouldWrap(location)
-            ? new DynamicBathtubMaterialModel(model)
-            : model);
+    event.getModels().replaceAll((location, model) -> {
+        if (net.minecraft.core.registries.BuiltInRegistries.BLOCK.get(location.id()) instanceof mod.crabmod.showercore.block.ShowerHeadBlock)
+            model = new mod.crabmod.showercore.client.model.ShowerMountModel(model);
+        return DynamicBathtubMaterialModel.shouldWrap(location) ? new DynamicBathtubMaterialModel(model) : model;
+    });
   }
 
   @SubscribeEvent
@@ -162,7 +171,12 @@ public class ClientEvent {
         BlocksRegister.BATHTUB_CLAWFOOT_IRON.get(),
         BlocksRegister.BATHTUB_CLAWFOOT_GOLD.get(),
         BlocksRegister.BATHTUB_CLAWFOOT_COPPER.get(),
-        BlocksRegister.BATHTUB_CLAWFOOT_DIAMOND.get());
+        BlocksRegister.BATHTUB_CLAWFOOT_DIAMOND.get(),
+        BlocksRegister.BATHTUB_OFURO_BIRCH.get(),
+        BlocksRegister.BATHTUB_ROMAN_WHITE.get(),
+        BlocksRegister.BATHTUB_SEASHELL_PINK.get(),
+        BlocksRegister.BATHTUB_WASHTUB_IRON.get(),
+        BlocksRegister.BATHTUB_SPA_WHITE.get());
   }
 
   @SubscribeEvent
@@ -254,6 +268,7 @@ public class ClientEvent {
 
   @SubscribeEvent
   public static void registerBER(EntityRenderersEvent.RegisterRenderers event) {
+    event.registerBlockEntityRenderer(BlockEntitiesRegister.BATHING_POOL.get(), mod.crabmod.showercore.client.renderer.PoolRenderer::new);
     // milk, honey, peony, rose, herbal
     event.registerBlockEntityRenderer(
         BlockEntitiesRegister.HOT_WATER_CORE_BLOCK_ENTITY.get(),

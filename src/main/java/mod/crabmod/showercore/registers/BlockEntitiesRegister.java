@@ -149,6 +149,11 @@ public class BlockEntitiesRegister {
                   blocks.add(BlocksRegister.COMPACT_SHOWER_HEAD_GOLD.get());
                   blocks.add(BlocksRegister.COMPACT_SHOWER_HEAD_COPPER.get());
                   blocks.add(BlocksRegister.COMPACT_SHOWER_HEAD_DIAMOND.get());
+                  blocks.add(BlocksRegister.BAMBOO_SHOWER_HEAD_BAMBOO.get());
+                  blocks.add(BlocksRegister.COLUMN_SHOWER_HEAD_WHITE.get());
+                  blocks.add(BlocksRegister.CORAL_SHOWER_HEAD_PINK.get());
+                  blocks.add(BlocksRegister.BUCKET_SHOWER_HEAD_SPRUCE.get());
+                  blocks.add(BlocksRegister.PANEL_SHOWER_HEAD_WHITE.get());
                   return BlockEntityType.Builder.of(ShowerHeadContainerEntity::new, blocks.toArray(new Block[0])).build(null);
               });
 
@@ -223,9 +228,17 @@ public class BlockEntitiesRegister {
              bathtubBlocks.add(BlocksRegister.BATHTUB_CLAWFOOT_GOLD.get());
              bathtubBlocks.add(BlocksRegister.BATHTUB_CLAWFOOT_COPPER.get());
              bathtubBlocks.add(BlocksRegister.BATHTUB_CLAWFOOT_DIAMOND.get());
+             bathtubBlocks.add(BlocksRegister.BATHTUB_OFURO_BIRCH.get());
+             bathtubBlocks.add(BlocksRegister.BATHTUB_ROMAN_WHITE.get());
+             bathtubBlocks.add(BlocksRegister.BATHTUB_SEASHELL_PINK.get());
+             bathtubBlocks.add(BlocksRegister.BATHTUB_WASHTUB_IRON.get());
+             bathtubBlocks.add(BlocksRegister.BATHTUB_SPA_WHITE.get());
              return BlockEntityType.Builder.of(BathtubBlockEntity::new, bathtubBlocks.toArray(new Block[0]))
                   .build(null);
           });
+
+  public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<mod.crabmod.showercore.pool.PoolBlockEntity>> BATHING_POOL =
+      BLOCK_ENTITIES.register("bathing_pool", () -> BlockEntityType.Builder.of(mod.crabmod.showercore.pool.PoolBlockEntity::new, BlocksRegister.BATHING_POOL.get()).build(null));
 
   public static void register(IEventBus eventBus) {
     BLOCK_ENTITIES.register(eventBus);

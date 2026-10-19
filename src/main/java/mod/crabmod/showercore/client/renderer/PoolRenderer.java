@@ -42,6 +42,8 @@ public final class PoolRenderer implements BlockEntityRenderer<PoolBlockEntity> 
         if(fluid.getFluid()==Fluids.LAVA)light=LightTexture.FULL_BRIGHT;
         var water=buffers.getBuffer(Sheets.translucentCullBlockSheet());
         polygon(water,matrix,cell.water(),cell,part.waterY(),waterSprite,r,g,b,a,light,true);
+        // Keep backface culling: the opposite winding exposes the surface only from below.
+        polygon(water,matrix,cell.water(),cell,part.waterY(),waterSprite,r,g,b,a,light,false);
         if(part.isController()&&part.circulating()) {
             var f=part.layout().faucet();double x=f.x()-cell.x(),z=.57-cell.z();
             box(water,matrix,x-.035,part.waterY(),z-.035,x+.035,1.18,z+.035,waterSprite,r,g,b,a,light);

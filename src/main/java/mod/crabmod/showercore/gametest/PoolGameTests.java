@@ -348,4 +348,92 @@ public final class PoolGameTests {
     @GameTest(template="pool_empty",timeoutTicks=130) public static void pool_rounded_resists_lava_flow(GameTestHelper h){externalFlow(h,ROUND,Blocks.LAVA);}
     @GameTest(template="pool_empty",timeoutTicks=130) public static void pool_circle_resists_lava_flow(GameTestHelper h){externalFlow(h,CIRCLE,Blocks.LAVA);}
 
+
+    private static void moveToWater(Player p,BlockPos o,double x,double z) {
+        p.setPos(o.getX()+x,o.getY()+PoolSpec.FLOOR_Y,o.getZ()+z);
+        p.setNoGravity(true);p.setOnGround(true);p.setDeltaMovement(Vec3.ZERO);p.setSpeed(.1F);
+        p.baseTick();
+    }
+    private static void nativeWater(GameTestHelper h,PoolSpec spec) {
+        var p=player(h,spec,false);var pool=place(h,spec,p);
+        pool.fluidHandler().fill(new FluidStack(Fluids.WATER,pool.layout().capacity()),IFluidHandler.FluidAction.EXECUTE);
+        moveToWater(p,origin(h),spec.width()/2.0,spec.length()/2.0);
+        h.assertTrue(p.isInWater(),"Filled pool must participate in native water detection");
+        double depth=pool.waterY()-PoolSpec.FLOOR_Y-.001;
+        h.assertTrue(Math.abs(p.getFluidHeight(net.minecraft.tags.FluidTags.WATER)-depth)<1e-6,"Native fluid depth must follow the rendered level");
+        h.assertTrue(h.getLevel().getFluidState(p.blockPosition()).isEmpty(),"Tank water must not become a flowing world fluid");h.succeed();
+    }
+    @GameTest(template="pool_empty") public static void pool_rectangle_native_water_contact(GameTestHelper h){nativeWater(h,RECT);}
+    @GameTest(template="pool_empty") public static void pool_rounded_native_water_contact(GameTestHelper h){nativeWater(h,ROUND);}
+    @GameTest(template="pool_empty") public static void pool_circle_native_water_contact(GameTestHelper h){nativeWater(h,CIRCLE);}
+
+    @GameTest(template="pool_empty") public static void pool_native_contact_clears_on_drain_and_exit(GameTestHelper h) {
+        var p=player(h,RECT,false);var pool=place(h,RECT,p);moveToWater(p,origin(h),2.5,2.5);
+        h.assertTrue(!p.isInWater(),"Empty basin must be dry");
+        pool.fluidHandler().fill(new FluidStack(Fluids.WATER,pool.layout().capacity()/4),IFluidHandler.FluidAction.EXECUTE);
+        p.baseTick();
+        h.assertTrue(p.isInWater()&&Math.abs(p.getFluidHeight(net.minecraft.tags.FluidTags.WATER)-(pool.waterY()-PoolSpec.FLOOR_Y-.001))<1e-6,"Partial tank height");
+        pool.fluidHandler().drain(Integer.MAX_VALUE,IFluidHandler.FluidAction.EXECUTE);p.baseTick();
+        h.assertTrue(!p.isInWater()&&p.getFluidHeight(net.minecraft.tags.FluidTags.WATER)==0,"Drained pool retained fluid contact");
+        pool.fluidHandler().fill(new FluidStack(Fluids.WATER,pool.layout().capacity()),IFluidHandler.FluidAction.EXECUTE);p.baseTick();
+        h.assertTrue(p.isInWater(),"Refill must restore native contact");moveToWater(p,origin(h),9,9);
+        h.assertTrue(!p.isInWater()&&p.getFluidHeight(net.minecraft.tags.FluidTags.WATER)==0,"Leaving the pool retained fluid contact");h.succeed();
+    }
+    @GameTest(template="pool_empty") public static void pool_native_contact_excludes_dry_rim_and_curved_corners(GameTestHelper h) {
+        var p=player(h,CIRCLE,false);var pool=place(h,CIRCLE,p);
+        pool.fluidHandler().fill(new FluidStack(Fluids.WATER,pool.layout().capacity()),IFluidHandler.FluidAction.EXECUTE);
+        moveToWater(p,origin(h),.3,.3);h.assertTrue(!p.isInWater(),"Outside circle corner must remain dry");
+        p.setPos(origin(h).getX()+.125,origin(h).getY()+PoolSpec.RIM_Y,origin(h).getZ()+2.5);p.baseTick();
+        h.assertTrue(!p.isInWater(),"Standing on the dry rim must not slow the player");h.succeed();
+    }
+    private static double nativeStep(Player p,BlockPos o,double x,double z) {
+        moveToWater(p,o,x,z);double before=p.getX();p.travel(new Vec3(1,0,0));return p.getX()-before;
+    }
+    @GameTest(template="pool_empty") public static void pool_water_movement_matches_native_world_water(GameTestHelper h) {
+        var p=player(h,RECT,false);var pool=place(h,RECT,p);
+        double dry=nativeStep(p,origin(h),2.5,2.5);
+        pool.fluidHandler().fill(new FluidStack(Fluids.WATER,pool.layout().capacity()),IFluidHandler.FluidAction.EXECUTE);
+        double wet=nativeStep(p,origin(h),2.5,2.5);
+        var control=origin(h).offset(10,0,0);h.getLevel().setBlock(control,Blocks.WATER.defaultBlockState(),3);
+        double vanilla=nativeStep(p,control,.5,.5);
+        h.assertTrue(p.isInWater()&&vanilla>0,"Native world-water movement control");
+        h.assertTrue(Math.abs(wet-vanilla)<1e-6&&wet<dry*.5,"Pool movement must use native water resistance: dry="+dry+", pool="+wet+", world="+vanilla);h.succeed();
+    }
+    @GameTest(template="pool_empty") public static void pool_crossing_member_boundaries_does_not_stack_resistance(GameTestHelper h) {
+        var p=player(h,RECT,false);var pool=place(h,RECT,p);
+        pool.fluidHandler().fill(new FluidStack(Fluids.WATER,pool.layout().capacity()),IFluidHandler.FluidAction.EXECUTE);
+        double single=nativeStep(p,origin(h),2.5,2.5),four=nativeStep(p,origin(h),2,2);
+        h.assertTrue(p.isInWater(),"Native water contact at a member boundary");
+        h.assertTrue(single>0&&Math.abs(single-four)<1e-6,"Resistance stacked per structural member");h.succeed();
+    }
+    @GameTest(template="pool_empty") public static void pool_liquid_contact_preserves_mod_and_lava_fluid_types(GameTestHelper h) {
+        var p=player(h,RECT,false);var pool=place(h,RECT,p);
+        var custom=CustomFluidAPI.createCustomFluidStack(new ResourceLocation("hotbath:golden_bath"),pool.layout().capacity());
+        var hot=net.minecraftforge.fluids.FluidUtil.getFluidContained(bucket("hot_water")).orElseThrow();hot.setAmount(pool.layout().capacity());
+        for(var fluid:List.of(new FluidStack(Fluids.WATER,pool.layout().capacity()),hot,custom,new FluidStack(Fluids.LAVA,pool.layout().capacity()))) {
+            pool.fluidHandler().drain(Integer.MAX_VALUE,IFluidHandler.FluidAction.EXECUTE);pool.fluidHandler().fill(fluid,IFluidHandler.FluidAction.EXECUTE);
+            moveToWater(p,origin(h),2.5,2.5);var type=fluid.getFluid().getFluidType();
+            h.assertTrue(p.getFluidTypeHeight(type)>0&&p.getMaxHeightFluidType()==type,"Tank liquid lost its registered native fluid type");
+            if(type!=Fluids.WATER.getFluidType())h.assertTrue(p.getFluidTypeHeight(Fluids.WATER.getFluidType())==0,"Non-water fluid was relabeled as the vanilla water type");
+            if(fluid.getFluid()==Fluids.LAVA)h.assertTrue(p.isInLava()&&!p.isInWater(),"Lava must retain native lava behavior");
+        }h.succeed();
+    }
+    @GameTest(template="pool_empty") public static void pool_mod_liquid_movement_matches_native_world_fluid(GameTestHelper h) {
+        var p=player(h,RECT,false);var pool=place(h,RECT,p);
+        var fluid=CustomFluidAPI.createCustomFluidStack(new ResourceLocation("hotbath:golden_bath"),pool.layout().capacity());
+        pool.fluidHandler().fill(fluid,IFluidHandler.FluidAction.EXECUTE);double wet=nativeStep(p,origin(h),2.5,2.5);
+        var control=origin(h).offset(10,0,0);h.getLevel().setBlock(control,fluid.getFluid().defaultFluidState().createLegacyBlock(),3);
+        double nativeFluid=nativeStep(p,control,.5,.5);
+        h.assertTrue(p.getFluidTypeHeight(fluid.getFluid().getFluidType())>0&&nativeFluid>0,"Mod-fluid world control");
+        h.assertTrue(Math.abs(wet-nativeFluid)<1e-6,"Pool bypassed the registered fluid movement behavior");h.succeed();
+    }
+    @GameTest(template="pool_empty") public static void pool_swimming_eye_contact_follows_actual_waterline(GameTestHelper h) {
+        var p=player(h,RECT,false);var pool=place(h,RECT,p);
+        p.setPose(net.minecraft.world.entity.Pose.SWIMMING);p.refreshDimensions();
+        pool.fluidHandler().fill(new FluidStack(Fluids.WATER,pool.layout().capacity()),IFluidHandler.FluidAction.EXECUTE);moveToWater(p,origin(h),2.5,2.5);
+        h.assertTrue(p.getEyeY()<origin(h).getY()+pool.waterY()&&p.isEyeInFluid(net.minecraft.tags.FluidTags.WATER),"Submerged eyes must detect the actual tank liquid");
+        pool.fluidHandler().drain(pool.layout().capacity()*3/4,IFluidHandler.FluidAction.EXECUTE);p.baseTick();
+        h.assertTrue(!p.isEyeInFluid(net.minecraft.tags.FluidTags.WATER),"Eyes above a shallow waterline stayed submerged");h.succeed();
+    }
+
 }

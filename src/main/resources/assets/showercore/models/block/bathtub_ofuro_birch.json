@@ -1,0 +1,7 @@
+{
+  "parent": "showercore:block/template/bathtub_ofuro",
+  "textures": {
+    "body": "minecraft:block/birch_planks",
+    "particle": "minecraft:block/birch_planks"
+  }
+}

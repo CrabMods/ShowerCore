@@ -1,7 +1,7 @@
 package mod.crabmod.showercore.client;
 
 import mod.crabmod.showercore.utils.BathEffectUtils;
-import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.world.level.Level;
 import java.util.function.Supplier;
@@ -23,9 +23,9 @@ public class ShowerHeadClientHelper {
         }
     }
 
-    public static void renderBathWater(Object utils, Level level, BlockPos pos, Supplier<ParticleOptions> particleTypeSupplier, double width, double depth, double centerX, double centerZ, double height) {
+    public static void renderBathWater(Object utils, Level level, Vec3 origin, Supplier<ParticleOptions> particleTypeSupplier, double width, double depth) {
         if (utils instanceof BathEffectUtils) {
-            ((BathEffectUtils) utils).renderBathWater(level, pos, particleTypeSupplier, width, depth, centerX, centerZ, height);
+            ((BathEffectUtils) utils).renderBathWater(level, origin, particleTypeSupplier, width, depth);
         }
     }
 }

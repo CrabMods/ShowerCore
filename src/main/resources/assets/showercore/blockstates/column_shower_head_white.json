@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "showercore:block/column_shower_head_white"
+    },
+    "facing=east": {
+      "model": "showercore:block/column_shower_head_white",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "showercore:block/column_shower_head_white",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "showercore:block/column_shower_head_white",
+      "y": 270
+    }
+  }
+}

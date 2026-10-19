@@ -32,6 +32,20 @@ public final class BathtubDropGeometry {
         return clawfoot ? computeClawfootDropBounds(faucetSide) : computeLegacyDropBounds(faucetSide);
     }
 
+    /** Profile coordinates use head-local right and toward-foot axes, in pixels. */
+    public static float[] computeDropBounds(FaucetSide facing, mod.crabmod.showercore.geometry.BathroomGeometry.Tub tub) {
+        var drop = tub.drop();
+        FaucetSide right = clockWise(facing), foot = clockWise(right);
+        float minX = Float.POSITIVE_INFINITY, minZ = Float.POSITIVE_INFINITY;
+        float maxX = Float.NEGATIVE_INFINITY, maxZ = Float.NEGATIVE_INFINITY;
+        for (double x : new double[]{drop.x1(),drop.x2()}) for(double z : new double[]{drop.z1(),drop.z2()}) {
+            float wx = blockLocalX(right,foot,(float)x/16,(float)z/16);
+            float wz = blockLocalZ(right,foot,(float)x/16,(float)z/16);
+            minX=Math.min(minX,wx); maxX=Math.max(maxX,wx); minZ=Math.min(minZ,wz); maxZ=Math.max(maxZ,wz);
+        }
+        return new float[]{minX,tub.waterLevel(),minZ,maxX,(float)drop.topY()/16,maxZ};
+    }
+
     private static float[] computeLegacyDropBounds(FaucetSide faucetSide) {
         final float dropHalfWidth = 1f / 16f;
         final float dropDepth = 1f / 16f;

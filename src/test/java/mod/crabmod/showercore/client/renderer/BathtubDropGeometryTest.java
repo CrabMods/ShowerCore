@@ -190,11 +190,11 @@ class BathtubDropGeometryTest {
                 () -> "BathtubBlockEntityRenderer must call BathtubDropGeometry.computeDropBounds(...) "
                         + "to size/position the drop cube. File: " + rendererPath);
 
-        assertTrue(source.contains("facing.getClockWise()"),
+        assertTrue(source.contains("BathtubBlock.geometryFor(state)"),
                 () -> "Clawfoot bathtubs put the faucet on the right rim, so the renderer must use "
                         + "FACING.getClockWise() for clawfoot drop placement. File: " + rendererPath);
 
-        assertTrue(source.contains("computeDropBounds(toFaucetSide(faucetSide), clawfoot)"),
+        assertTrue(source.contains("computeDropBounds(toFaucetSide(facing), BathtubBlock.geometryFor(state))"),
                 () -> "Renderer must pass the clawfoot flag into BathtubDropGeometry.computeDropBounds "
                         + "so clawfoot drops use side-rim coordinates. File: " + rendererPath);
     }

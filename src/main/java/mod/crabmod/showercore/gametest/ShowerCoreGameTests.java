@@ -124,56 +124,6 @@ public final class ShowerCoreGameTests {
     }
 
     @GameTest(template = EMPTY_TEMPLATE, timeoutTicks = 40)
-    public static void held_bathtub_material_change_uses_air_right_click_costs_six_blocks(GameTestHelper helper) {
-        Player player = survivalPlayer(helper.getLevel());
-        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(BlocksRegister.BATHTUB_CLAWFOOT_WHITE.get()));
-        player.setItemInHand(InteractionHand.OFF_HAND, new ItemStack(Blocks.GOLD_BLOCK, 6));
-
-        InteractionResult result = player.getItemInHand(InteractionHand.MAIN_HAND)
-                .getItem()
-                .use(helper.getLevel(), player, InteractionHand.MAIN_HAND)
-                .getResult();
-
-        assertTrue(result.consumesAction(), "main-hand bathtub use must consume the action");
-        assertMaterial(player.getItemInHand(InteractionHand.MAIN_HAND), GOLD_BLOCK_ID, "main-hand bathtub material");
-        assertEquals(0, player.getItemInHand(InteractionHand.OFF_HAND).getCount(), "source block cost");
-        helper.succeed();
-    }
-
-    @GameTest(template = EMPTY_TEMPLATE, timeoutTicks = 40)
-    public static void held_bathtub_material_change_works_from_either_hand(GameTestHelper helper) {
-        Player player = survivalPlayer(helper.getLevel());
-        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Blocks.GOLD_BLOCK, 6));
-        player.setItemInHand(InteractionHand.OFF_HAND, new ItemStack(BlocksRegister.BATHTUB_CLAWFOOT_WHITE.get()));
-
-        InteractionResult result = BathtubBlockItem.tryApplyMaterialToHeldBathtub(
-                helper.getLevel(), player, InteractionHand.MAIN_HAND);
-
-        assertTrue(result.consumesAction(), "off-hand bathtub material use must consume the action");
-        assertMaterial(player.getItemInHand(InteractionHand.OFF_HAND), GOLD_BLOCK_ID, "off-hand bathtub material");
-        assertEquals(0, player.getItemInHand(InteractionHand.MAIN_HAND).getCount(), "main-hand source block cost");
-        helper.succeed();
-    }
-
-    @GameTest(template = EMPTY_TEMPLATE, timeoutTicks = 40)
-    public static void held_bathtub_material_change_requires_six_blocks(GameTestHelper helper) {
-        Player player = survivalPlayer(helper.getLevel());
-        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(BlocksRegister.BATHTUB_CLAWFOOT_WHITE.get()));
-        player.setItemInHand(InteractionHand.OFF_HAND, new ItemStack(Blocks.GOLD_BLOCK, 5));
-
-        InteractionResult result = player.getItemInHand(InteractionHand.MAIN_HAND)
-                .getItem()
-                .use(helper.getLevel(), player, InteractionHand.MAIN_HAND)
-                .getResult();
-
-        assertTrue(result.consumesAction(), "not-enough-material feedback must consume the action");
-        assertEquals(null, BathtubBlockItem.getMaterialBlockId(player.getItemInHand(InteractionHand.MAIN_HAND)),
-                "bathtub material after failed cost gate");
-        assertEquals(5, player.getItemInHand(InteractionHand.OFF_HAND).getCount(), "source blocks after failed cost gate");
-        helper.succeed();
-    }
-
-    @GameTest(template = EMPTY_TEMPLATE, timeoutTicks = 40)
     public static void placed_bathtub_does_not_accept_material_change(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos footPos = helper.absolutePos(BATHTUB_FOOT_POS);

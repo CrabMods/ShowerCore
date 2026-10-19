@@ -182,10 +182,13 @@ class BathtubClawfootModelRegressionTest {
     }
 
     @Test
-    void decorationsKeepTheirFixedTextureSlotsAndFloorUsesBody() throws IOException {
+    void decorationsStayFixedAndAllBodySurfacesUseTheMaterial() throws IOException {
         String mtl = Files.readString(ROOT.resolve("clawfoot/clawfoot.mtl"));
-        assertEquals(7, mtl.lines().filter(line -> line.equals("forge_TintIndex -1")).count(),
-                "Every model material must opt out of the water-color tint");
+        assertEquals(7, mtl.lines().filter(line -> Set.of("forge_TintIndex -1", "forge_TintIndex 1").contains(line)).count(),
+                "All seven materials must explicitly opt out of water tint 0");
+        assertTrue(mesh("full").stream().filter(face -> face.group.equals("shell"))
+                .allMatch(face -> Set.of("body", "base").contains(face.material)),
+                "The entire shell, rim and bowl must use customizable body surfaces");
         for (String slot : List.of("body", "base", "feet", "faucet", "button_base", "hot_button", "cold_button"))
             assertTrue(mtl.lines().anyMatch(line -> line.equals("map_Kd #" + slot)));
         for (String name : TEMPLATES) {
@@ -197,9 +200,10 @@ class BathtubClawfootModelRegressionTest {
             assertEquals("minecraft:block/redstone_block", textures.get("hot_button").getAsString());
             assertEquals("minecraft:block/lapis_block", textures.get("cold_button").getAsString());
         }
+        assertTrue(mtl.contains("newmtl base\nKd 1 1 1\nforge_TintIndex 1\nmap_Kd #base"), "Underside marker must preserve its legacy texture while allowing whole-body customization");
         List<Face> floor = mesh("full").stream().filter(f -> f.group.equals("shell") && f.corners.stream().allMatch(c -> Math.abs(c.position.y - .25) < EPS)).toList();
         assertFalse(floor.isEmpty(), "Bowl floor must exist");
-        assertTrue(floor.stream().allMatch(f -> f.material.equals("body")), "Bowl floor must follow the selected skin");
+        assertTrue(floor.stream().allMatch(f -> f.material.equals("body")), "Bowl floor must share the body material");
     }
 
     @Test

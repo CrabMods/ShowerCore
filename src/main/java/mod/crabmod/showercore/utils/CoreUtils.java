@@ -21,6 +21,7 @@ import net.minecraft.core.Direction;
 public class CoreUtils {
 
     public static boolean isEntityInBathtub(Entity entity, BathtubBlock.LiquidType liquidType) {
+        if (mod.crabmod.showercore.pool.PoolContact.bathing(entity, p -> p.liquidType() == liquidType)) return true;
         if (entity.getVehicle() instanceof SeatEntity) {
              return checkBathtubAt(entity.level(), entity.getVehicle().blockPosition(), liquidType);
         }
@@ -33,6 +34,7 @@ public class CoreUtils {
     }
 
     public static boolean isEntityInAnyHotBathtub(Entity entity) {
+        if (mod.crabmod.showercore.pool.PoolContact.bathing(entity, mod.crabmod.showercore.pool.PoolBlockEntity::isHot)) return true;
         if (entity.getVehicle() instanceof SeatEntity) {
              return checkAnyHotBathtubAt(entity.level(), entity.getVehicle().blockPosition());
         }
@@ -115,7 +117,7 @@ public class CoreUtils {
     public static boolean isCustomFluidHotAt(Level level, BlockPos pos) {
         try {
             net.minecraft.world.level.block.entity.BlockEntity be = level.getBlockEntity(pos);
-            if (be instanceof mod.crabmod.showercore.block.entity.BathtubBlockEntity bathtubBe) {
+            if (be instanceof mod.crabmod.showercore.pool.BathFluidSource bathtubBe) {
                 java.util.Optional<com.crabmod.hotbath.custom_fluid.CustomFluidDefinition> defOpt = bathtubBe.getCustomFluidDefinition();
                 return defOpt.map(com.crabmod.hotbath.custom_fluid.CustomFluidDefinition::isHot).orElse(false);
             }
@@ -143,11 +145,13 @@ public class CoreUtils {
      * For built-in hot liquids and shower heads, returns the default 40.0f.
      */
     public static float getShowerCoreBathTemperature(Entity player) {
+        var pool=mod.crabmod.showercore.pool.PoolContact.find(player,p->true);
+        if(pool!=null)return pool.getCustomFluidDefinition().map(com.crabmod.hotbath.custom_fluid.CustomFluidDefinition::temperature).orElse(pool.isHot()?40f:20f);
         try {
             Entity vehicle = player.getVehicle();
             BlockPos pos = vehicle instanceof SeatEntity ? vehicle.blockPosition() : player.blockPosition();
             net.minecraft.world.level.block.entity.BlockEntity be = player.level().getBlockEntity(pos);
-            if (be instanceof mod.crabmod.showercore.block.entity.BathtubBlockEntity bathtubBe) {
+            if (be instanceof mod.crabmod.showercore.pool.BathFluidSource bathtubBe) {
                 java.util.Optional<com.crabmod.hotbath.custom_fluid.CustomFluidDefinition> defOpt = bathtubBe.getCustomFluidDefinition();
                 if (defOpt.isPresent()) {
                     return defOpt.get().temperature();

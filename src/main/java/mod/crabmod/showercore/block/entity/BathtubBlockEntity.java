@@ -21,8 +21,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
+import mod.crabmod.showercore.material.BathtubMaterialFace;
 
-public class BathtubBlockEntity extends BlockEntity {
+public class BathtubBlockEntity extends BlockEntity implements mod.crabmod.showercore.pool.BathFluidSource {
     private static final String TAG_CUSTOM_FLUID_ID = "CustomFluidId";
     public static final String TAG_MATERIAL_BLOCK_ID = "MaterialBlockId";
 
@@ -41,6 +42,7 @@ public class BathtubBlockEntity extends BlockEntity {
     private ResourceLocation customFluidId;
     @Nullable
     private ResourceLocation materialBlockId;
+    private BathtubMaterialFace materialFace = BathtubMaterialFace.LEGACY;
 
     public BathtubBlockEntity(BlockPos pos, BlockState state) {
         super(BlockEntitiesRegister.BATHTUB_BLOCK_ENTITY.get(), pos, state);
@@ -65,11 +67,18 @@ public class BathtubBlockEntity extends BlockEntity {
         return materialBlockId;
     }
 
+    public BathtubMaterialFace getMaterialFace() {
+        return materialFace;
+    }
+
     public void setMaterialBlockId(@Nullable ResourceLocation materialBlockId) {
-        if (java.util.Objects.equals(this.materialBlockId, materialBlockId)) {
-            return;
-        }
+        setMaterial(materialBlockId, BathtubMaterialFace.LEGACY);
+    }
+
+    public void setMaterial(@Nullable ResourceLocation materialBlockId, BathtubMaterialFace face) {
+        if (java.util.Objects.equals(this.materialBlockId, materialBlockId) && materialFace == face) return;
         this.materialBlockId = materialBlockId;
+        this.materialFace = face;
         setChanged();
         requestModelDataUpdate();
         if (level != null && !level.isClientSide) {
@@ -118,6 +127,7 @@ public class BathtubBlockEntity extends BlockEntity {
         } else {
             materialBlockId = null;
         }
+        materialFace = BathtubMaterialFace.read(tag.getString(BathtubMaterialFace.TAG));
         requestModelDataUpdate();
     }
 
@@ -130,6 +140,9 @@ public class BathtubBlockEntity extends BlockEntity {
         }
         if (materialBlockId != null) {
             tag.putString(TAG_MATERIAL_BLOCK_ID, materialBlockId.toString());
+            if (materialFace != BathtubMaterialFace.LEGACY) {
+                tag.putString(BathtubMaterialFace.TAG, materialFace.serializedName());
+            }
         }
     }
 

@@ -1,0 +1,8 @@
+{
+  "parent": "showercore:block/template/bathtub_seashell_head_empty",
+  "textures": {
+    "body": "showercore:block/bathroom/shell_ivory",
+    "particle": "showercore:block/bathroom/shell_ivory",
+    "trim": "showercore:block/bathroom/shell_rose"
+  }
+}

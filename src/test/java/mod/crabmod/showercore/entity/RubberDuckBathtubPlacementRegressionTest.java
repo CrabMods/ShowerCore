@@ -56,7 +56,7 @@ class RubberDuckBathtubPlacementRegressionTest {
         assertTrue(source.contains("BathtubBlock.waterLevelFor(state)"),
                 "BathtubBlockEntityRenderer must use BathtubBlock.waterLevelFor(state), not private "
                         + "renderer-only constants that can drift from duck physics.");
-        assertTrue(source.contains("BathtubBlock.isClawfootBathtub(state)"),
+        assertTrue(source.contains("BathtubBlock.geometryFor(state)"),
                 "Renderer clawfoot detection must use the shared BathtubBlock helper.");
     }
 }

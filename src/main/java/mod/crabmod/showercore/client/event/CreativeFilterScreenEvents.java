@@ -303,7 +303,8 @@ public class CreativeFilterScreenEvents {
           accessories
         };
 
-    BuiltInRegistries.ITEM.stream()
+    ItemGroup.HOT_BATH_TAB.get().getDisplayItems().stream()
+        .map(ItemStack::getItem)
         .filter(CreativeFilterScreenEvents::isShowerCoreItem)
         .forEach(
             item ->
@@ -345,7 +346,8 @@ public class CreativeFilterScreenEvents {
   }
 
   private void addFallbackItems(TagFilter filter) {
-    BuiltInRegistries.ITEM.stream()
+    ItemGroup.HOT_BATH_TAB.get().getDisplayItems().stream()
+        .map(ItemStack::getItem)
         .filter(CreativeFilterScreenEvents::isShowerCoreItem)
         .forEach(
             item -> {
@@ -391,7 +393,7 @@ public class CreativeFilterScreenEvents {
       return path.startsWith("bathtub_") && !path.startsWith("bathtub_clawfoot_");
     }
     if (tag == ShowerCoreItemTags.ACCESSORIES) {
-      return path.equals("rubber_duck");
+      return path.startsWith("rubber_duck");
     }
     return false;
   }

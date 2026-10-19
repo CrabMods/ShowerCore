@@ -19,6 +19,13 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class SeatEntity extends Entity {
+    private BlockPos poolOwner;
+    private java.util.UUID poolId;
+    private int poolSlot = -1;
+    public void bindPool(BlockPos owner, java.util.UUID id, int slot) { poolOwner=owner.immutable();poolId=id;poolSlot=slot; }
+    public BlockPos poolOwner() { return poolOwner; }
+    public java.util.UUID poolId() { return poolId; }
+    public int poolSlot() { return poolSlot; }
     public SeatEntity(EntityType<?> type, Level level) {
         super(type, level);
     }
@@ -32,10 +39,14 @@ public class SeatEntity extends Entity {
     protected void defineSynchedData() {}
 
     @Override
-    protected void readAdditionalSaveData(CompoundTag tag) {}
+    protected void readAdditionalSaveData(CompoundTag tag) {
+        if(tag.hasUUID("PoolId"))bindPool(BlockPos.of(tag.getLong("PoolOwner")),tag.getUUID("PoolId"),tag.getInt("PoolSlot"));
+    }
 
     @Override
-    protected void addAdditionalSaveData(CompoundTag tag) {}
+    protected void addAdditionalSaveData(CompoundTag tag) {
+        if(poolId!=null){tag.putUUID("PoolId",poolId);tag.putLong("PoolOwner",poolOwner.asLong());tag.putInt("PoolSlot",poolSlot);}
+    }
 
     @Override
     public Packet<ClientGamePacketListener> getAddEntityPacket() {
@@ -50,6 +61,10 @@ public class SeatEntity extends Entity {
                 this.discard();
             }
 
+            if (poolId != null) {
+                if (!mod.crabmod.showercore.pool.PoolSeats.validSeat(this)) { ejectPassengers(); discard(); }
+                return;
+            }
             if (this.tickCount % 20 == 0) {
                 BlockPos pos = this.blockPosition();
                 BlockState state = this.level().getBlockState(pos);
@@ -138,7 +153,7 @@ public class SeatEntity extends Entity {
             case CUSTOM -> {
                 if (shouldRefreshBuffs && entity instanceof ServerPlayer serverPlayer) {
                     BlockEntity be = level.getBlockEntity(pos);
-                    if (be instanceof BathtubBlockEntity bathtubBe) {
+                    if (be instanceof mod.crabmod.showercore.pool.BathFluidSource bathtubBe) {
                         ResourceLocation fluidId = bathtubBe.getCustomFluidId();
                         if (fluidId != null) {
                             CustomFluidAPI.applyFluidEffects(serverPlayer, fluidId);

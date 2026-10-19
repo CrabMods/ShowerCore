@@ -77,7 +77,6 @@ public class BathtubBlockEntityRenderer implements BlockEntityRenderer<BathtubBl
         VertexConsumer builder = pBufferSource.getBuffer(Sheets.translucentCullBlockSheet());
         Matrix4f matrix = pPoseStack.last().pose();
 
-        boolean clawfoot = BathtubBlock.isClawfootBathtub(state);
         float y = BathtubBlock.waterLevelFor(state);
         float minU = sprite.getU0();
         float maxU = sprite.getU1();
@@ -112,9 +111,7 @@ public class BathtubBlockEntityRenderer implements BlockEntityRenderer<BathtubBl
         // The BER owns fluid rendering for every non-empty liquid; block models provide only
         // the tub and faucet geometry.
         if (BathtubDropGeometry.shouldRenderDrop(part == BedPart.HEAD, state.getValue(BathtubBlock.RUNNING))) {
-            // Legacy faucets sit on the short end; clawfoot faucets sit on the right rim.
-            Direction faucetSide = clawfoot ? facing.getClockWise() : connectedSide.getOpposite();
-            float[] b = BathtubDropGeometry.computeDropBounds(toFaucetSide(faucetSide), clawfoot);
+            float[] b = BathtubDropGeometry.computeDropBounds(toFaucetSide(facing), BathtubBlock.geometryFor(state));
             renderDropCube(builder, matrix, b[0], b[1], b[2], b[3], b[4], b[5],
                     sprite, red, green, blue, alpha, lightForFluid);
         }

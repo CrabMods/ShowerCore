@@ -1,0 +1,7 @@
+{
+  "parent": "showercore:block/template/bathtub_washtub",
+  "textures": {
+    "body": "minecraft:block/iron_block",
+    "particle": "minecraft:block/iron_block"
+  }
+}

@@ -180,11 +180,11 @@ class CreativeFilterSidebarRegressionTest {
     @DisplayName("Creative filter tag resources cover every current ShowerCore group")
     void tagResourcesCoverCurrentGroups() throws IOException {
         assertCategory("bath_cores", 6, id -> id.endsWith("_core"));
-        assertCategory("shower_heads", 66, id -> id.contains("shower_head"));
-        assertCategory("bathtubs", 33,
+        assertCategory("shower_heads", 71, id -> id.contains("shower_head"));
+        assertCategory("bathtubs", 38,
                 id -> id.startsWith("bathtub_") && !id.startsWith("bathtub_clawfoot_"));
         assertCategory("clawfoot_bathtubs", 33, id -> id.startsWith("bathtub_clawfoot_"));
-        assertCategory("accessories", 1, id -> id.equals("rubber_duck"));
+        assertCategory("accessories", 2, id -> id.startsWith("rubber_duck"));
 
         Set<String> legacy = readTagValues(TAG_ROOT.resolve("bathtubs.json"));
         Set<String> clawfoot = readTagValues(TAG_ROOT.resolve("clawfoot_bathtubs.json"));

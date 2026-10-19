@@ -1,6 +1,7 @@
 package mod.crabmod.showercore.block;
 
 import javax.annotation.Nullable;
+import mod.crabmod.showercore.geometry.BathroomGeometry;
 import com.crabmod.hotbath.custom_fluid.CustomFluidAPI;
 import com.crabmod.hotbath.custom_fluid.CustomFluidBucketItem;
 import com.crabmod.hotbath.custom_fluid.CustomFluidBottleItem;
@@ -74,9 +75,7 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.nbt.CompoundTag;
 
-public class BathtubBlock extends HorizontalDirectionalBlock implements EntityBlock {
-  private static final double LEGACY_SEAT_Y_OFFSET = 0.1D;
-  private static final double CLAWFOOT_SEAT_Y_OFFSET = 0.32D;
+public class BathtubBlock extends HorizontalDirectionalBlock implements EntityBlock, mod.crabmod.showercore.pool.BathFaucet, mod.crabmod.showercore.geometry.BathMountSurface {
   public static final EnumProperty<BedPart> PART = BlockStateProperties.BED_PART;
   public static final IntegerProperty LIGHT_LEVEL = IntegerProperty.create("light_level", 0, 15);
   public static final BooleanProperty RUNNING = BooleanProperty.create("running");
@@ -160,8 +159,19 @@ public class BathtubBlock extends HorizontalDirectionalBlock implements EntityBl
       Block.box(14, 4, 0, 16, 12, 16) // East wall
   );
 
+  private final BathroomGeometry.Tub mountGeometry;
+
+  public BathroomGeometry.Tub mountGeometry() {
+      return mountGeometry;
+  }
+
   public BathtubBlock(Properties properties) {
+      this(properties, BathroomGeometry.STANDARD_TUB);
+  }
+
+  public BathtubBlock(Properties properties, BathroomGeometry.Tub geometry) {
     super(properties.lightLevel(state -> state.getValue(LIGHT_LEVEL)));
+    this.mountGeometry = geometry;
     this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(PART, BedPart.FOOT).setValue(LIQUID, LiquidType.EMPTY).setValue(RUNNING, false).setValue(LIGHT_LEVEL, 0));
   }
 
@@ -212,6 +222,19 @@ public class BathtubBlock extends HorizontalDirectionalBlock implements EntityBl
   public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
     Direction direction = state.getValue(FACING);
     BedPart part = state.getValue(PART);
+    if (mountGeometry != BathroomGeometry.STANDARD_TUB && mountGeometry != BathroomGeometry.CLAWFOOT_TUB) {
+        double floor = mountGeometry.floorY(), rim = mountGeometry.rimY();
+        VoxelShape shape = direction.getAxis() == Direction.Axis.Z
+                ? Shapes.or(Block.box(0,0,0,16,floor,16), Block.box(0,floor,0,2,rim,16), Block.box(14,floor,0,16,rim,16))
+                : Shapes.or(Block.box(0,0,0,16,floor,16), Block.box(0,floor,0,16,rim,2), Block.box(0,floor,14,16,rim,16));
+        Direction end = part == BedPart.HEAD ? direction : direction.getOpposite();
+        return Shapes.or(shape, switch (end) {
+            case NORTH -> Block.box(0,floor,0,16,rim,2);
+            case SOUTH -> Block.box(0,floor,14,16,rim,16);
+            case WEST -> Block.box(0,floor,0,2,rim,16);
+            default -> Block.box(14,floor,0,16,rim,16);
+        });
+    }
 
     if (part == BedPart.FOOT) {
       switch (direction) {
@@ -254,17 +277,19 @@ public class BathtubBlock extends HorizontalDirectionalBlock implements EntityBl
       state.updateNeighbourShapes(level, pos, 3);
 
       ResourceLocation materialBlockId = getMaterialBlockId(stack);
+      var materialFace = mod.crabmod.showercore.item.BathtubBlockItem.getMaterialFace(stack);
       BlockEntity footBe = level.getBlockEntity(pos);
       if (footBe instanceof BathtubBlockEntity footBathtub) {
           if (materialBlockId != null) {
-              footBathtub.setMaterialBlockId(materialBlockId);
+              footBathtub.setMaterial(materialBlockId, materialFace);
           } else {
               materialBlockId = footBathtub.getMaterialBlockId();
+              materialFace = footBathtub.getMaterialFace();
           }
       }
       BlockEntity headBe = level.getBlockEntity(blockpos);
       if (headBe instanceof BathtubBlockEntity headBathtub) {
-          headBathtub.setMaterialBlockId(materialBlockId);
+          headBathtub.setMaterial(materialBlockId, materialFace);
       }
 
       spawnFaucetInteractionEntities(level, blockpos, state);
@@ -275,12 +300,12 @@ public class BathtubBlock extends HorizontalDirectionalBlock implements EntityBl
       Direction facing = state.getValue(FACING);
       Direction right = facing.getClockWise();
       Direction towardFoot = facing.getOpposite();
-      for (double[] local : FaucetInteractionGeometry.hitboxOrigins(isClawfootBathtub(state))) {
+      for (var local : geometryFor(state).faucets()) {
           double x = FaucetInteractionGeometry.worldX(
-                  headPos.getX(), right.getStepX(), towardFoot.getStepX(), local[0], local[2]);
-          double y = FaucetInteractionGeometry.worldY(headPos.getY(), local[1]);
+                  headPos.getX(), right.getStepX(), towardFoot.getStepX(), local.x() / 16.0, local.z() / 16.0);
+          double y = FaucetInteractionGeometry.worldY(headPos.getY(), local.y() / 16.0);
           double z = FaucetInteractionGeometry.worldZ(
-                  headPos.getZ(), right.getStepZ(), towardFoot.getStepZ(), local[0], local[2]);
+                  headPos.getZ(), right.getStepZ(), towardFoot.getStepZ(), local.x() / 16.0, local.z() / 16.0);
           level.addFreshEntity(new FaucetInteractionEntity(level, x, y, z));
       }
   }
@@ -305,15 +330,15 @@ public class BathtubBlock extends HorizontalDirectionalBlock implements EntityBl
   }
 
   public static double getSeatYOffset(BlockState state) {
-      return isClawfootBathtub(state) ? CLAWFOOT_SEAT_Y_OFFSET : LEGACY_SEAT_Y_OFFSET;
+      return geometryFor(state).seatOffset();
   }
 
   public static float waterLevelFor(BlockState state) {
-      return BathtubWaterGeometry.waterLevel(isClawfootBathtub(state));
+      return geometryFor(state).waterLevel();
   }
 
   public static float duckFloatSurfaceFor(BlockState state) {
-      return BathtubWaterGeometry.duckFloatSurface(isClawfootBathtub(state));
+      return waterLevelFor(state) + BathtubWaterGeometry.DUCK_FLOAT_CLEARANCE;
   }
 
   public static Vec3 duckPlacementFor(BlockPos pos, BlockState state, Vec3 requestedPos) {
@@ -324,8 +349,11 @@ public class BathtubBlock extends HorizontalDirectionalBlock implements EntityBl
   }
 
   public static boolean isClawfootBathtub(BlockState state) {
-      ResourceLocation blockId = ForgeRegistries.BLOCKS.getKey(state.getBlock());
-      return blockId != null && blockId.getPath().startsWith("bathtub_clawfoot_");
+      return geometryFor(state) == BathroomGeometry.CLAWFOOT_TUB;
+  }
+
+  public static BathroomGeometry.Tub geometryFor(BlockState state) {
+      return ((BathtubBlock) state.getBlock()).mountGeometry();
   }
 
   @Nullable
@@ -362,7 +390,7 @@ public class BathtubBlock extends HorizontalDirectionalBlock implements EntityBl
       ItemStack itemstack = player.getItemInHand(hand);
 
       // Place Rubber Duck
-      if (itemstack.getItem() == mod.crabmod.showercore.registers.ItemRegister.RUBBER_DUCK.get()) {
+      if (itemstack.getItem() instanceof mod.crabmod.showercore.item.RubberDuckItem) {
           return InteractionResult.PASS;
       }
 
@@ -850,4 +878,24 @@ public class BathtubBlock extends HorizontalDirectionalBlock implements EntityBl
 
       super.entityInside(state, level, pos, entity);
   }
+
+  @Override
+  public InteractionResult useFaucet(Level level, BlockPos pos, BlockState state, Player player) {
+      boolean running = state.getValue(RUNNING);
+      boolean next = !running && state.getValue(LIQUID) != LiquidType.EMPTY;
+      level.setBlock(pos, state.setValue(RUNNING, next), 3);
+      level.playSound(null, pos, next ? SoundEvents.WATER_AMBIENT : SoundEvents.BUCKET_EMPTY, net.minecraft.sounds.SoundSource.BLOCKS, 1, 1);
+      return InteractionResult.CONSUME;
+  }
+  @Override
+  public mod.crabmod.showercore.geometry.BathMountSurface.Support showerSupport(Level level, BlockPos clicked, BlockHitResult hit, mod.crabmod.showercore.geometry.BathroomGeometry.Shower shower) {
+      var state=level.getBlockState(clicked);var facing=state.getValue(FACING);
+      var head=state.getValue(PART)==BedPart.HEAD?clicked:clicked.relative(facing);var foot=head.relative(facing.getOpposite());
+      if(!level.getBlockState(head).is(this)||!level.getBlockState(foot).is(this)
+          ||level.getBlockState(head).getValue(PART)!=BedPart.HEAD||level.getBlockState(foot).getValue(PART)!=BedPart.FOOT
+          ||level.getBlockState(head).getValue(FACING)!=facing||level.getBlockState(foot).getValue(FACING)!=facing)return null;
+      var into=facing.getOpposite();var ref=mod.crabmod.showercore.geometry.BathMountSurface.rotate(.5,1,into);
+      return new mod.crabmod.showercore.geometry.BathMountSurface.Support(new net.minecraft.world.phys.Vec3(head.getX()+ref.x,head.getY()+mountGeometry.rimY()/16.0,head.getZ()+ref.z),into);
+  }
+
 }

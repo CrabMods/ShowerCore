@@ -76,8 +76,8 @@ class BathtubFaucetModelValidityTest {
     @DisplayName("Resolved _head_faucet model does not contain fluid elements")
     void rootModelHasNoFluidElements() throws IOException {
         String resolved = ModelJsonTestUtils.resolveBlockModel(MODELS_DIR, ROOT_MODEL).toString();
-        assertFalse(resolved.contains("tintindex"),
-                ROOT_MODEL + " must not have tintindex; fluid tinting is done by the BER.");
+        assertFalse(resolved.contains("\"tintindex\":0"),
+                ROOT_MODEL + " must not use fluid tint 0; lining tint 1 does not tint water.");
         assertFalse(resolved.contains("#fluid"),
                 ROOT_MODEL + " must not reference #fluid texture; no fluid is in this model.");
     }

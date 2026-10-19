@@ -1,0 +1,8 @@
+{
+  "parent": "showercore:block/template/bamboo_shower_head",
+  "textures": {
+    "body": "minecraft:block/bamboo_planks",
+    "particle": "minecraft:block/bamboo_planks",
+    "trim": "minecraft:block/stripped_bamboo_block"
+  }
+}

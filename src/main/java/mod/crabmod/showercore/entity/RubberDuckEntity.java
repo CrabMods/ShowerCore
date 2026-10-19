@@ -18,7 +18,27 @@ import net.minecraftforge.network.NetworkHooks;
 
 public class RubberDuckEntity extends Entity {
 
+    private static final net.minecraft.network.syncher.EntityDataAccessor<net.minecraft.world.item.ItemStack> APPEARANCE =
+            net.minecraft.network.syncher.SynchedEntityData.defineId(RubberDuckEntity.class, net.minecraft.network.syncher.EntityDataSerializers.ITEM_STACK);
     private float rotationalVelocity;
+
+    public void setAppearance(net.minecraft.world.item.ItemStack stack) {
+        if (!(stack.getItem() instanceof mod.crabmod.showercore.item.RubberDuckItem))
+            throw new IllegalArgumentException("Duck appearance must be a rubber duck item");
+        entityData.set(APPEARANCE, stack.copyWithCount(1));
+    }
+
+    public net.minecraft.world.item.ItemStack appearance() {
+        var stack = entityData.get(APPEARANCE);
+        return stack.isEmpty() ? new net.minecraft.world.item.ItemStack(mod.crabmod.showercore.registers.ItemRegister.RUBBER_DUCK.get()) : stack.copy();
+    }
+
+    private void pickup(Player player) {
+        var stack = appearance();
+        if (!player.addItem(stack)) player.drop(stack, false);
+        discard();
+        playSound(net.minecraft.sounds.SoundEvents.ITEM_PICKUP, 1.0F, 1.0F);
+    }
 
     public RubberDuckEntity(EntityType<?> type, Level level) {
         super(type, level);
@@ -30,13 +50,16 @@ public class RubberDuckEntity extends Entity {
     }
 
     @Override
-    protected void defineSynchedData() {}
+    protected void defineSynchedData() { entityData.define(APPEARANCE, net.minecraft.world.item.ItemStack.EMPTY); }
 
     @Override
-    protected void readAdditionalSaveData(CompoundTag tag) {}
+    protected void readAdditionalSaveData(CompoundTag tag) {
+        var stack = net.minecraft.world.item.ItemStack.of(tag.getCompound("Appearance"));
+        if (stack.getItem() instanceof mod.crabmod.showercore.item.RubberDuckItem) setAppearance(stack);
+    }
 
     @Override
-    protected void addAdditionalSaveData(CompoundTag tag) {}
+    protected void addAdditionalSaveData(CompoundTag tag) { tag.put("Appearance", appearance().save(new CompoundTag())); }
 
     @Override
     public Packet<ClientGamePacketListener> getAddEntityPacket() {
@@ -57,6 +80,7 @@ public class RubberDuckEntity extends Entity {
         int maxZ = net.minecraft.util.Mth.ceil(aabb.maxZ);
         
         double fluidHeight = 0.0D;
+        mod.crabmod.showercore.pool.PoolBlockEntity floatingPool = null;
         boolean isDestroyFluid = false;
         
         net.minecraft.core.BlockPos.MutableBlockPos mutablePos = new net.minecraft.core.BlockPos.MutableBlockPos();
@@ -77,6 +101,14 @@ public class RubberDuckEntity extends Entity {
                         }
                     }
 
+                    if(this.level().getBlockEntity(mutablePos) instanceof mod.crabmod.showercore.pool.PoolBlockEntity pool && pool.configured() && pool.active() && !pool.fluid().isEmpty()) {
+                        double height=pool.origin().getY()+pool.waterY()+.05;
+                        if(mod.crabmod.showercore.pool.PoolLayout.area(mod.crabmod.showercore.pool.PoolLayout.clip(pool.layout().waterOutline(),aabb.minX-pool.origin().getX(),aabb.minZ-pool.origin().getZ(),aabb.maxX-pool.origin().getX(),aabb.maxZ-pool.origin().getZ()))>1e-8) {
+                            floatingPool=pool;
+                            isDestroyFluid|=mod.crabmod.showercore.Config.rubberDuckDestroyFluids.contains(pool.fluid().getFluid());
+                            if(height>=aabb.minY)fluidHeight=Math.max(fluidHeight,height-aabb.minY);
+                        }
+                    }
                     net.minecraft.world.level.block.state.BlockState blockState = this.level().getBlockState(mutablePos);
                     if (blockState.getBlock() instanceof mod.crabmod.showercore.block.BathtubBlock) {
                         if (blockState.getValue(mod.crabmod.showercore.block.BathtubBlock.LIQUID) != mod.crabmod.showercore.block.BathtubBlock.LiquidType.EMPTY) {
@@ -134,6 +166,10 @@ public class RubberDuckEntity extends Entity {
         }
         
         this.move(MoverType.SELF, this.getDeltaMovement());
+        if(floatingPool!=null) {
+            var point=floatingPool.layout().clampToInterior(getX()-floatingPool.origin().getX(),getZ()-floatingPool.origin().getZ(),.5);
+            this.setPos(floatingPool.origin().getX()+point.x(),getY(),floatingPool.origin().getZ()+point.z());
+        }
     }
 
     @Override
@@ -147,7 +183,7 @@ public class RubberDuckEntity extends Entity {
 
     @Override
     public net.minecraft.world.item.ItemStack getPickResult() {
-        return new net.minecraft.world.item.ItemStack(mod.crabmod.showercore.registers.ItemRegister.RUBBER_DUCK.get());
+        return appearance();
     }
 
     @Override
@@ -159,9 +195,7 @@ public class RubberDuckEntity extends Entity {
     public InteractionResult interactAt(Player player, Vec3 vec, InteractionHand hand) {
         if (player.isShiftKeyDown() && player.getItemInHand(hand).isEmpty()) {
             if (!this.level().isClientSide) {
-                this.discard();
-                player.addItem(new net.minecraft.world.item.ItemStack(mod.crabmod.showercore.registers.ItemRegister.RUBBER_DUCK.get()));
-                this.playSound(net.minecraft.sounds.SoundEvents.ITEM_PICKUP, 1.0F, 1.0F);
+                pickup(player);
             }
             return InteractionResult.sidedSuccess(this.level().isClientSide);
         }
@@ -198,9 +232,7 @@ public class RubberDuckEntity extends Entity {
     public InteractionResult interact(Player player, InteractionHand hand) {
         if (player.isShiftKeyDown() && player.getItemInHand(hand).isEmpty()) {
             if (!this.level().isClientSide) {
-                this.discard();
-                player.addItem(new net.minecraft.world.item.ItemStack(mod.crabmod.showercore.registers.ItemRegister.RUBBER_DUCK.get()));
-                this.playSound(net.minecraft.sounds.SoundEvents.ITEM_PICKUP, 1.0F, 1.0F);
+                pickup(player);
             }
             return InteractionResult.sidedSuccess(this.level().isClientSide);
         }

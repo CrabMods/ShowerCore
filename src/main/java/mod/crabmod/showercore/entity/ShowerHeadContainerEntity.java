@@ -1,5 +1,7 @@
 package mod.crabmod.showercore.entity;
 
+import mod.crabmod.showercore.block.ShowerHeadBlock;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -26,6 +28,20 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraft.world.effect.MobEffect;
 
 public class ShowerHeadContainerEntity extends BaseShowerHeadBlockEntity {
+  private net.minecraft.resources.ResourceLocation materialBlockId;
+  private mod.crabmod.showercore.material.BathtubMaterialFace materialFace = mod.crabmod.showercore.material.BathtubMaterialFace.LEGACY;
+  public net.minecraft.resources.ResourceLocation getMaterialBlockId() { return materialBlockId; }
+  public mod.crabmod.showercore.material.BathtubMaterialFace getMaterialFace() { return materialFace; }
+  public record HorizontalMount(float x, float z) {
+    public HorizontalMount { if(!Float.isFinite(x)||!Float.isFinite(z)||Math.abs(x)>1||Math.abs(z)>1)throw new IllegalArgumentException("Invalid horizontal mount"); }
+  }
+  private HorizontalMount horizontalMount = new HorizontalMount(0,0);
+  public HorizontalMount horizontalMount() { return horizontalMount; }
+  public void setHorizontalMount(float x,float z) {
+    var next=new HorizontalMount(x,z);if(next.equals(horizontalMount))return;
+    horizontalMount=next;setChanged();
+    if(level!=null){if(level.isClientSide)requestModelDataUpdate();else level.sendBlockUpdated(worldPosition,getBlockState(),getBlockState(),3);}
+  }
   private boolean effectActive = false;
   private Object bathEffectUtils;
   private final Map<UUID, Integer> timeUnderShower = new HashMap<>();
@@ -35,7 +51,7 @@ public class ShowerHeadContainerEntity extends BaseShowerHeadBlockEntity {
    * Updated every server tick by the shower head entity tick method.
    * Used by temperature mod compat handlers to detect shower usage.
    */
-  private static final Set<UUID> PLAYERS_UNDER_ACTIVE_SHOWER = java.util.concurrent.ConcurrentHashMap.newKeySet();
+  private static final ActiveShowerPlayers<ShowerHeadContainerEntity> PLAYERS_UNDER_ACTIVE_SHOWER = new ActiveShowerPlayers<>();
 
   /**
    * Checks if a player is currently under an active shower head with a core installed.
@@ -67,6 +83,7 @@ public class ShowerHeadContainerEntity extends BaseShowerHeadBlockEntity {
   // 切换效果状态的方法
   public void toggleEffect() {
     effectActive = !effectActive;
+    if (!effectActive) clearTrackedPlayers();
     this.setChanged();
   }
 
@@ -93,6 +110,17 @@ public class ShowerHeadContainerEntity extends BaseShowerHeadBlockEntity {
   public void load(net.minecraft.nbt.CompoundTag tag) {
     super.load(tag);
     this.effectActive = tag.getBoolean("EffectActive");
+    String material = tag.getString(mod.crabmod.showercore.material.BathroomMaterials.MATERIAL_ID);
+    materialBlockId = material.isEmpty() ? null : net.minecraft.resources.ResourceLocation.tryParse(material);
+    materialFace = mod.crabmod.showercore.material.BathtubMaterialFace.read(tag.getString(mod.crabmod.showercore.material.BathtubMaterialFace.TAG));
+    var beforeMount = horizontalMount;
+    float mx=tag.getFloat("MountX"),mz=tag.getFloat("MountZ");
+    horizontalMount=Float.isFinite(mx)&&Float.isFinite(mz)&&Math.abs(mx)<=1&&Math.abs(mz)<=1?new HorizontalMount(mx,mz):new HorizontalMount(0,0);
+    if(level!=null&&level.isClientSide&&!beforeMount.equals(horizontalMount))stopEffect();
+    if (level != null && level.isClientSide) {
+      requestModelDataUpdate();
+      if(!beforeMount.equals(horizontalMount))level.sendBlockUpdated(worldPosition,getBlockState(),getBlockState(),3);
+    }
     if (this.level != null && this.level.isClientSide) {
       if (this.effectActive) {
         this.startEffect();
@@ -114,6 +142,11 @@ public class ShowerHeadContainerEntity extends BaseShowerHeadBlockEntity {
   protected void saveAdditional(net.minecraft.nbt.CompoundTag tag) {
     super.saveAdditional(tag);
     tag.putBoolean("EffectActive", this.effectActive);
+    tag.putFloat("MountX",horizontalMount.x());tag.putFloat("MountZ",horizontalMount.z());
+    if (materialBlockId != null) {
+      tag.putString(mod.crabmod.showercore.material.BathroomMaterials.MATERIAL_ID, materialBlockId.toString());
+      tag.putString(mod.crabmod.showercore.material.BathtubMaterialFace.TAG, materialFace.serializedName());
+    }
   }
 
   @Override
@@ -133,20 +166,15 @@ public class ShowerHeadContainerEntity extends BaseShowerHeadBlockEntity {
 
   public void startEffect() {
       if (this.level != null && this.level.isClientSide && this.effectActive) {
-            net.minecraft.world.level.block.Block block = this.getBlockState().getBlock();
-            String name = ForgeRegistries.BLOCKS.getKey(block).getPath();
-            
-            final double width = name.contains("compact_shower_head") ? 0.375 : 0.5625;
-            final double depth = name.contains("compact_shower_head") ? 0.375 : 0.3125;
-            final double centerX = 0.5;
-            final double centerZ = name.contains("compact_shower_head") ? 0.53125 : 0.5;
-            final double height = 0.78;
+            var state = getBlockState();
+            var shower = (ShowerHeadBlock)state.getBlock();
+            var origin = shower.sprayOrigin(level, worldPosition, state);
 
             DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
                 if (this.bathEffectUtils == null) {
                     this.bathEffectUtils = ShowerHeadClientHelper.createBathEffectUtils();
                 }
-                ShowerHeadClientHelper.renderBathWater(this.bathEffectUtils, this.level, this.worldPosition, this::getParticleType, width, depth, centerX, centerZ, height);
+                ShowerHeadClientHelper.renderBathWater(this.bathEffectUtils, this.level, origin, this::getParticleType, shower.sprayWidth(state), shower.sprayDepth(state));
             });
       }
   }
@@ -163,47 +191,53 @@ public class ShowerHeadContainerEntity extends BaseShowerHeadBlockEntity {
     }
   }
 
+  private void clearTrackedPlayers() {
+    for (UUID player : timeUnderShower.keySet()) PLAYERS_UNDER_ACTIVE_SHOWER.remove(player, this);
+    timeUnderShower.clear();
+  }
+
   @Override
   public void setRemoved() {
+    clearTrackedPlayers();
     super.setRemoved();
     this.shutdownEffect();
+  }
+
+  public AABB sprayBounds() {
+    var state = getBlockState();
+    var shower = (ShowerHeadBlock)state.getBlock();
+    var origin = shower.sprayOrigin(level, worldPosition, state);
+    double bottomY = origin.y - 10;
+    var check = BlockPos.containing(origin).mutable();
+    for (int i = 0; i < 10; i++) {
+      check.move(net.minecraft.core.Direction.DOWN);
+      var collision = level.getBlockState(check).getCollisionShape(level, check);
+      if (!collision.isEmpty()) {
+        bottomY = Math.min(origin.y, check.getY() + collision.max(net.minecraft.core.Direction.Axis.Y));
+        break;
+      }
+    }
+    double halfWidth = shower.sprayWidth(state) / 2;
+    double halfDepth = shower.sprayDepth(state) / 2;
+    return new AABB(origin.x - halfWidth, bottomY, origin.z - halfDepth,
+                    origin.x + halfWidth, origin.y, origin.z + halfDepth);
   }
 
   public static void tick(Level level, BlockPos pos, BlockState state, ShowerHeadContainerEntity entity) {
     if (level.isClientSide) return;
 
     if (!entity.isEffectActive() || entity.isEmpty()) {
-      entity.timeUnderShower.clear();
+      entity.clearTrackedPlayers();
       return;
     }
 
     ItemStack core = entity.getItem(0);
     if (core.isEmpty()) {
-        entity.timeUnderShower.clear();
+        entity.clearTrackedPlayers();
         return;
     }
 
-    // Calculate the effective height of the shower
-    int maxRange = 10;
-    double bottomY = pos.getY() - 1 - maxRange;
-    
-    BlockPos.MutableBlockPos checkPos = pos.mutable();
-    checkPos.move(net.minecraft.core.Direction.DOWN);
-    
-    for (int i = 1; i <= maxRange; i++) {
-        checkPos.move(net.minecraft.core.Direction.DOWN);
-        BlockState checkState = level.getBlockState(checkPos);
-        net.minecraft.world.phys.shapes.VoxelShape collisionShape = checkState.getCollisionShape(level, checkPos);
-        if (!collisionShape.isEmpty()) {
-            bottomY = checkPos.getY() + collisionShape.max(net.minecraft.core.Direction.Axis.Y);
-            break;
-        }
-    }
-    
-    AABB detectionBox = new AABB(
-        pos.getX() + 0.2, bottomY, pos.getZ() + 0.2, 
-        pos.getX() + 0.8, pos.getY() - 0.5, pos.getZ() + 0.8
-    );
+    AABB detectionBox = entity.sprayBounds();
 
     List<LivingEntity> entities = level.getEntitiesOfClass(LivingEntity.class, detectionBox);
     Set<UUID> currentEntities = new HashSet<>();
@@ -217,7 +251,7 @@ public class ShowerHeadContainerEntity extends BaseShowerHeadBlockEntity {
 
       // Track players under active shower for compat mod integration
       if (livingEntity instanceof net.minecraft.world.entity.player.Player) {
-        PLAYERS_UNDER_ACTIVE_SHOWER.add(uuid);
+        PLAYERS_UNDER_ACTIVE_SHOWER.add(uuid, entity);
       }
 
       // Dirtiness cleaning is handled by DirtinessHandlerMixin injecting into
@@ -231,7 +265,7 @@ public class ShowerHeadContainerEntity extends BaseShowerHeadBlockEntity {
     // Remove players that left this shower from the tracking set
     for (UUID tracked : entity.timeUnderShower.keySet()) {
       if (!currentEntities.contains(tracked)) {
-        PLAYERS_UNDER_ACTIVE_SHOWER.remove(tracked);
+        PLAYERS_UNDER_ACTIVE_SHOWER.remove(tracked, entity);
       }
     }
 

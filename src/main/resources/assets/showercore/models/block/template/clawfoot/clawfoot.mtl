@@ -5,7 +5,7 @@ map_Kd #body
 
 newmtl base
 Kd 1 1 1
-forge_TintIndex -1
+forge_TintIndex 1
 map_Kd #base
 
 newmtl feet

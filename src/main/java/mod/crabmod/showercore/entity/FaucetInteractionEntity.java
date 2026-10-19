@@ -1,6 +1,6 @@
 package mod.crabmod.showercore.entity;
 
-import mod.crabmod.showercore.block.BathtubBlock;
+import mod.crabmod.showercore.pool.BathFaucet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
@@ -55,21 +55,10 @@ public class FaucetInteractionEntity extends Entity {
         
         BlockPos pos = this.blockPosition();
         BlockState state = this.level().getBlockState(pos);
-        
-        if (state.getBlock() instanceof BathtubBlock) {
-            BathtubBlock.LiquidType currentLiquid = state.getValue(BathtubBlock.LIQUID);
-            boolean isRunning = state.getValue(BathtubBlock.RUNNING);
-            
-            if (!isRunning && currentLiquid != BathtubBlock.LiquidType.EMPTY) {
-                this.level().setBlock(pos, state.setValue(BathtubBlock.RUNNING, true), 3);
-                this.level().playSound(null, pos, SoundEvents.WATER_AMBIENT, SoundSource.BLOCKS, 1.0F, 1.0F);
-            } else {
-                this.level().setBlock(pos, state.setValue(BathtubBlock.RUNNING, false), 3);
-            }
-            return InteractionResult.CONSUME;
-        } else {
-            this.discard(); // If block is gone, remove entity
-            return InteractionResult.PASS;
+        if (state.getBlock() instanceof mod.crabmod.showercore.pool.BathFaucet faucet) {
+            return faucet.useFaucet(this.level(), pos, state, player);
         }
+        this.discard();
+        return InteractionResult.PASS;
     }
 }

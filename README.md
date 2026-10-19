@@ -19,7 +19,7 @@ Choose the matching file for your Minecraft version and loader. Install on the s
 
 [CurseForge](https://www.curseforge.com/minecraft/mc-mods/showercore) · [Modrinth](https://modrinth.com/mod/showercore) · [GitHub](https://github.com/CrabMods/ShowerCore)
 
-Requires [Hot Bath](https://www.curseforge.com/minecraft/mc-mods/hotbath).
+Requires [Hot Bath](https://www.curseforge.com/minecraft/mc-mods/hotbath) **4.1.2 or later**, matching your Minecraft version and loader.
 
 <!-- PROMO-VIDEO:END -->
 
@@ -27,7 +27,7 @@ Requires [Hot Bath](https://www.curseforge.com/minecraft/mc-mods/hotbath).
 
 Welcome to **ShowerCore**! Tired of smelling like a zombie after a long mining trip? Want to gain superpowers just by standing under some water? You've come to the right place. This mod turns your boring hygiene routine into a magical, buff-granting experience.
 
-> **Note:** This mod requires **[HotBath](https://www.curseforge.com/minecraft/mc-mods/hotbath)** to work properly. HotBath provides the basic bath fluids used in this mod.
+> **Note:** This mod requires **[HotBath](https://www.curseforge.com/minecraft/mc-mods/hotbath) 4.1.2 or later** to work properly. HotBath provides the basic bath fluids used in this mod.
 
 ## The Shower Head
 

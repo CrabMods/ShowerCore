@@ -126,7 +126,7 @@ configurations {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     // Use local hotBath jar file
-    implementation files('../hotBath/build/libs/hotbath-1.21.1-4.1.0.jar')
+    implementation files("../hotBath/build/libs/hotbath-${minecraft_version}-${hotbath_version}.jar")
     // Example of adding a dependency.
     // implementation 'com.some:library:1.0.0'
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
@@ -188,6 +188,7 @@ publishing {
 tasks.named('processResources', ProcessResources).configure {
     var replaceProperties = [
             minecraft_version   : minecraft_version,
+            hotbath_version     : hotbath_version,
             minecraft_version_range: minecraft_version_range,
             neoforge_version    : neoforge_version,
             neoforge_version_range: neoforge_version_range,

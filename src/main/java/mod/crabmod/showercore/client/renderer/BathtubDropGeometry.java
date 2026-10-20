@@ -164,15 +164,4 @@ public final class BathtubDropGeometry {
             default: return 0;
         }
     }
-
-    /**
-     * Resolve the tint color. When {@code customColor != -1} (from CustomFluidAPI),
-     * force alpha=0xFF and use that color; otherwise return {@code fallbackTint}.
-     */
-    public static int resolveCustomColor(int customColor, int fallbackTint) {
-        if (customColor != -1) {
-            return 0xFF000000 | (customColor & 0x00FFFFFF);
-        }
-        return fallbackTint;
-    }
 }

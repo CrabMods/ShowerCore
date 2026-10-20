@@ -24,7 +24,7 @@ import java.util.List;
 /** Native fixture shared by the fluid interaction and renderer-input regressions. */
 final class BathtubFluidTestSupport {
     static final List<String> CUSTOM = List.of("blazing_bath", "enchanted_bath", "ender_bath",
-            "golden_bath", "milk_tea", "silent_spring", "slime_bath");
+            "golden_bath", "milk_tea", "silent_spring", "slime_bath", "appearance_half", "appearance_clear", "appearance_white", "appearance_black");
 
     static ResourceLocation id(String value) { return ResourceLocation.parse(value); }
 
@@ -55,7 +55,12 @@ final class BathtubFluidTestSupport {
                 require(synced.getFluidTank().getFluidAmount() == 1000, "Fluid amount must survive the client update tag");
                 require(synced.getFluidTank().getFluid().getFluid() == be.getFluidTank().getFluid().getFluid(), "Fluid identity changed during sync");
                 require(java.util.Objects.equals(be.getCustomFluidId(), synced.getCustomFluidId()), "Custom identity changed during sync");
-                if (CUSTOM.contains(fluid)) require(id("hotbath:" + fluid).equals(be.getCustomFluidId()), "Custom bucket identity was lost");
+                if (CUSTOM.contains(fluid)) {
+                    require(id("hotbath:" + fluid).equals(be.getCustomFluidId()), "Custom bucket identity was lost");
+                    var definition = be.getCustomFluidDefinition().orElseThrow();
+                    require(synced.getCustomFluidDefinition().orElseThrow().equals(definition), "Fluid appearance definition changed during client sync");
+                    require((CustomFluidAPI.getFluidColor(definition.id()) >>> 24) == (int)(definition.opacity() * 255), "Fluid opacity changed during bucket transfer");
+                }
             }
             var targets = level.getEntitiesOfClass(FaucetInteractionEntity.class, new AABB(head).inflate(.7));
             require(targets.size() == (BathtubBlock.isClawfootBathtub(state) ? 3 : 1), "Faucet target count");

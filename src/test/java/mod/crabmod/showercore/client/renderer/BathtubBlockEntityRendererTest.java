@@ -158,66 +158,6 @@ class BathtubBlockEntityRendererTest {
         assertTrue(BathtubDropGeometry.shouldRenderDrop(true, true));
     }
 
-    // ---- Color resolution tests -------------------------------------------
-
-    @Test
-    @DisplayName("customColor != -1 with alpha=0: result forces 0xFF alpha, preserves RGB")
-    void resolveCustomColor_usesCustomWithForcedOpaqueAlpha() {
-        int custom = 0x0012_34_56; // alpha=0 (as CustomFluidAPI typically returns)
-        int fallback = 0xAA_ABCDEF;
-        int result = BathtubDropGeometry.resolveCustomColor(custom, fallback);
-        assertEquals(0xFF_12_34_56, result, () -> "got 0x" + Integer.toHexString(result));
-    }
-
-    @Test
-    @DisplayName("customColor != -1 with non-zero alpha: alpha still forced to 0xFF")
-    void resolveCustomColor_forcesAlphaEvenWhenCustomAlphaIsNonZero() {
-        int custom = 0x33_AA_BB_CC;
-        int result = BathtubDropGeometry.resolveCustomColor(custom, 0);
-        assertEquals(0xFF_AA_BB_CC, result);
-    }
-
-    @Test
-    @DisplayName("customColor == -1: falls back to IClientFluidTypeExtensions tint color (verbatim)")
-    void resolveCustomColor_fallsBackWhenNoCustomColor() {
-        int fallback = 0x80_11_22_33;
-        int result = BathtubDropGeometry.resolveCustomColor(-1, fallback);
-        assertEquals(fallback, result);
-    }
-
-    @Test
-    @DisplayName("customColor == -1: even negative fallback values are returned unchanged")
-    void resolveCustomColor_signedFallbackPassthrough() {
-        int fallback = 0xFFFFFFFF; // = -1 as int, but since we're in fallback branch that's irrelevant
-        int result = BathtubDropGeometry.resolveCustomColor(-1, fallback);
-        assertEquals(fallback, result);
-    }
-
-    @Test
-    @DisplayName("Distinct custom colors yield distinct rendered colors (no per-fluid flattening)")
-    void resolveCustomColor_distinctFluidsStayDistinct() {
-        // Regression for bug: "all custom fluids in bathtub show same color".
-        // When each fluid's CustomFluidAPI.getFluidColor(id) returns a distinct value,
-        // the renderer must produce distinct opaque ARGB results - not collapse them to
-        // a shared FluidType tint.
-        int sharedFallback = 0xFFFFFFFF; // what the shared DYNAMIC_FLUID_STILL tint would be
-
-        int red    = BathtubDropGeometry.resolveCustomColor(0x00FF0000, sharedFallback);
-        int green  = BathtubDropGeometry.resolveCustomColor(0x0000FF00, sharedFallback);
-        int blue   = BathtubDropGeometry.resolveCustomColor(0x000000FF, sharedFallback);
-        int purple = BathtubDropGeometry.resolveCustomColor(0x008844CC, sharedFallback);
-
-        assertEquals(0xFFFF0000, red);
-        assertEquals(0xFF00FF00, green);
-        assertEquals(0xFF0000FF, blue);
-        assertEquals(0xFF8844CC, purple);
-        // Sanity: no two fluids collide.
-        assertNotEquals(red, green);
-        assertNotEquals(green, blue);
-        assertNotEquals(red, purple);
-        assertNotEquals(blue, purple);
-    }
-
     // ---- Helpers ----------------------------------------------------------
 
     private static void assertBounds(float[] b, float expectedFx1, float expectedFx2,

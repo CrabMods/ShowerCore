@@ -156,16 +156,6 @@ class BathtubBERRenderingRegressionTest {
     }
 
     @Test
-    @DisplayName("BER resolves custom fluid color via BathtubDropGeometry.resolveCustomColor")
-    void colorResolutionDelegated() throws IOException {
-        String source = TestSourceUtils.readSource(BER_SOURCE);
-        assertTrue(source.contains("BathtubDropGeometry.resolveCustomColor"),
-                "BER must delegate color resolution to BathtubDropGeometry.resolveCustomColor "
-                        + "so custom fluids use per-fluid CustomFluidAPI colors (not the shared "
-                        + "DynamicFluidType tint) and alpha is forced to 0xFF.");
-    }
-
-    @Test
     @DisplayName("BER fetches per-fluid color via CustomFluidAPI.getFluidColor")
     void usesCustomFluidAPIColor() throws IOException {
         String source = TestSourceUtils.readSource(BER_SOURCE);

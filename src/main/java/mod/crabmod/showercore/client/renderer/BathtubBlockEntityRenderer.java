@@ -48,16 +48,12 @@ public class BathtubBlockEntityRenderer implements BlockEntityRenderer<BathtubBl
 
         TextureAtlasSprite sprite = Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(stillTexture);
 
-        // Resolve the tint color. For custom fluids the fluid type is shared, so the FluidType
-        // tint would be identical across variants. Prefer the per-fluid color from CustomFluidAPI
-        // (keyed by the customFluidId stored in the block entity) so each custom fluid appears
-        // with its own color.
-        ResourceLocation customFluidId = pBlockEntity.getCustomFluidId();
-        int customColor = (customFluidId != null) ? CustomFluidAPI.getFluidColor(customFluidId) : -1;
-        int fallback = (pBlockEntity.getLevel() != null)
-                ? fluidTypeExtensions.getTintColor(fluid.defaultFluidState(), pBlockEntity.getLevel(), pBlockEntity.getBlockPos())
-                : fluidTypeExtensions.getTintColor(fluidStack);
-        int color = BathtubDropGeometry.resolveCustomColor(customColor, fallback);
+        // Legacy bathtubs keep their custom fluid identity separately from the tank stack.
+        int color = pBlockEntity.getCustomFluidDefinition()
+                .map(definition -> CustomFluidAPI.getFluidColor(definition.id()))
+                .orElseGet(() -> pBlockEntity.getLevel() != null
+                        ? fluidTypeExtensions.getTintColor(fluid.defaultFluidState(), pBlockEntity.getLevel(), pBlockEntity.getBlockPos())
+                        : fluidTypeExtensions.getTintColor(fluidStack));
 
         float alpha = ((color >> 24) & 0xFF) / 255f;
         float red = ((color >> 16) & 0xFF) / 255f;

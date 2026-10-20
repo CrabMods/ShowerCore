@@ -91,15 +91,8 @@ class BathtubSnowMeltRegressionTest {
     @Test
     @DisplayName("CUSTOM liquids only melt snow when CoreUtils.isCustomFluidHotAt reports hot")
     void customLiquidMeltsOnlyWhenHot() {
-        assertTrue(Pattern.compile("\\w+\\s*!=\\s*LiquidType\\s*\\.\\s*CUSTOM").matcher(serverTickBody).find(),
-                "serverTick must test '<liquid> != LiquidType.CUSTOM' as part of the hot check — non-custom "
-                        + "hot liquids are always hot, but CUSTOM needs a per-pos temperature check.");
-
-        assertTrue(Pattern.compile("CoreUtils\\s*\\.\\s*isCustomFluidHotAt\\s*\\(\\s*level\\s*,\\s*pos\\s*\\)")
-                        .matcher(serverTickBody).find(),
-                "serverTick must delegate custom-fluid temperature to "
-                        + "'CoreUtils.isCustomFluidHotAt(level, pos)'. Skipping this check would make cold "
-                        + "custom fluids (e.g. ice baths from modpacks) erroneously melt surrounding snow.");
+        assertTrue(serverTickBody.contains("be.isHot()"),
+                "Snow melting must use the shared fluid policy, including reloaded cold built-in baths.");
     }
 
     @Test

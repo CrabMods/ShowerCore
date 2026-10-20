@@ -2,7 +2,6 @@ package mod.crabmod.showercore.pool;
 
 import com.crabmod.hotbath.custom_fluid.CustomFluidAPI;
 import mod.crabmod.showercore.block.BathtubBlock;
-import mod.crabmod.showercore.entity.SeatEntity;
 import mod.crabmod.showercore.registers.BlockEntitiesRegister;
 import net.minecraft.core.*;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -10,7 +9,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -31,6 +29,7 @@ public final class PoolBlockEntity extends BlockEntity implements BathFluidSourc
     private FluidTank tank;
     private boolean active, circulating, loading;
     private int paidMaterials;
+    private int lastSynchronizedLight=-1;
 
     public PoolBlockEntity(BlockPos pos,BlockState state) { super(BlockEntitiesRegister.BATHING_POOL.get(),pos,state); }
     public boolean configured() { return poolId!=null&&settings!=null; }
@@ -96,12 +95,13 @@ public final class PoolBlockEntity extends BlockEntity implements BathFluidSourc
 
     public void synchronize() {
         if(level==null||level.isClientSide||!configured()||!isController())return;
+        int liquidLight=luminosity();lastSynchronizedLight=liquidLight;
         for(var cell:layout().cells()) {
             BlockPos pos=origin.offset(cell.x(),0,cell.z());
             if(!level.hasChunkAt(pos))continue;
             if(level.getBlockEntity(pos) instanceof PoolBlockEntity part&&matches(part)) {
                 part.settings=settings;part.visibleFluid=visibleFluid.copy();part.active=active;part.circulating=circulating;
-                int light=part.cell().water().isEmpty()||visibleFluid.isEmpty()?0:fluidLight();
+                int light=part.cell().water().isEmpty()||visibleFluid.isEmpty()?0:liquidLight;
                 var state=level.getBlockState(pos);
                 if(state.getValue(PoolBlock.LIGHT)!=light)level.setBlock(pos,state.setValue(PoolBlock.LIGHT,light),3);
                 part.setChanged();level.sendBlockUpdated(pos,part.getBlockState(),part.getBlockState(),3);
@@ -109,10 +109,6 @@ public final class PoolBlockEntity extends BlockEntity implements BathFluidSourc
         }
     }
 
-    private int fluidLight() {
-        if(getCustomFluidId()!=null)return getCustomFluidDefinition().map(f->Math.max(0,Math.min(15,f.luminosity()))).orElse(0);
-        return Math.max(0,Math.min(15,visibleFluid.getFluid().getFluidType().getLightLevel(visibleFluid)));
-    }
     @Override @Nullable public ResourceLocation getCustomFluidId() { return CustomFluidAPI.getCustomFluidId(visibleFluid); }
     public BathtubBlock.LiquidType liquidType() {
         if(visibleFluid.isEmpty())return BathtubBlock.LiquidType.EMPTY;
@@ -124,16 +120,8 @@ public final class PoolBlockEntity extends BlockEntity implements BathFluidSourc
         }
         return BathtubBlock.LiquidType.CUSTOM;
     }
-    public boolean isHot() {
-        var type=liquidType();
-        return type==BathtubBlock.LiquidType.CUSTOM?getCustomFluidDefinition().map(f->f.isHot()).orElse(visibleFluid.getFluid()==Fluids.LAVA)
-                :type!=BathtubBlock.LiquidType.EMPTY&&type!=BathtubBlock.LiquidType.WATER;
-    }
-    public boolean emitsSteam() {
-        if(!active()||visibleFluid.isEmpty())return false;
-        var definition=getCustomFluidDefinition();
-        if(definition.isPresent())return definition.get().isHot()&&definition.get().showSteam();
-        return liquidType()==BathtubBlock.LiquidType.CUSTOM?mod.crabmod.showercore.Config.steamFluids.contains(visibleFluid.getFluid()):isHot();
+    @Override public boolean emitsSteam() {
+        return active()&&BathFluidSource.super.emitsSteam();
     }
     public boolean touchesWater(AABB bounds) {
         if(!configured()||visibleFluid.isEmpty()||bounds.minY>=origin.getY()+waterY()||bounds.maxY<=origin.getY()+PoolSpec.FLOOR_Y)return false;
@@ -141,14 +129,12 @@ public final class PoolBlockEntity extends BlockEntity implements BathFluidSourc
                 bounds.maxX-origin.getX(),bounds.maxZ-origin.getZ()))>1e-8;
     }
 
-    public static void tick(Level level,BlockPos pos,BlockState state,PoolBlockEntity pool) {
-        if(level.isClientSide||!pool.isController()||!pool.active()||pool.visibleFluid.isEmpty()||level.getGameTime()%20!=0)return;
-        var bounds=new AABB(pool.origin.getX(),pool.origin.getY(),pool.origin.getZ(),pool.origin.getX()+pool.settings.spec().width(),
-                pool.origin.getY()+1,pool.origin.getZ()+pool.settings.spec().length());
-        for(var living:level.getEntitiesOfClass(LivingEntity.class,bounds))if(pool.touchesWater(living.getBoundingBox())) {
-            if(pool.visibleFluid.getFluid()==Fluids.LAVA)living.igniteForSeconds(4);
-            else SeatEntity.applyBathEffects(living,pool.liquidType(),level,pos);
-        }
+    @Override public boolean touchesBathFluid(AABB bounds) {
+        return active()&&touchesWater(bounds);
+    }
+
+    @Override public void refreshBathDefinition() {
+        if(isController()&&luminosity()!=lastSynchronizedLight)synchronize();
     }
 
     @Override public void onLoad() {
@@ -192,5 +178,8 @@ public final class PoolBlockEntity extends BlockEntity implements BathFluidSourc
     @Override public ClientboundBlockEntityDataPacket getUpdatePacket() { return ClientboundBlockEntityDataPacket.create(this); }
     @Override public void onDataPacket(Connection connection,ClientboundBlockEntityDataPacket packet,HolderLookup.Provider registries) {
         loadWithComponents(packet.getTag(),registries);
+    }
+    @Override public double bathSurfaceY() {
+        return origin.getY()+waterY();
     }
 }

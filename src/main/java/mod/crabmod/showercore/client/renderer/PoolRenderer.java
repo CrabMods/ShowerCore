@@ -35,13 +35,10 @@ public final class PoolRenderer implements BlockEntityRenderer<PoolBlockEntity> 
         for(var edge:cell.innerWalls())wall(body,matrix,edge,cell,PoolSpec.FLOOR_Y,PoolSpec.RIM_Y,sprite,light,true);
         if(part.isController())faucet(body,matrix,part,light);
         var fluid=part.fluid();if(fluid.isEmpty()||cell.water().isEmpty())return;
-        var extension=IClientFluidTypeExtensions.of(fluid.getFluid());
-        var texture=extension.getStillTexture(fluid);
+        var texture=BathFluidAppearance.texture(part,part.getLevel(),part.getBlockPos(),false);
         var waterSprite=Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS)
                 .apply(texture==null?MissingTextureAtlasSprite.getLocation():texture);
-        int color=part.getCustomFluidDefinition()
-                .map(definition->com.crabmod.hotbath.custom_fluid.CustomFluidAPI.getFluidColor(definition.id()))
-                .orElseGet(()->part.getLevel()==null?extension.getTintColor(fluid):extension.getTintColor(fluid.getFluid().defaultFluidState(),part.getLevel(),part.getBlockPos()));
+        int color=BathFluidAppearance.tint(part,part.getLevel(),part.getBlockPos());
         float r=((color>>16)&255)/255f,g=((color>>8)&255)/255f,b=(color&255)/255f,a=((color>>>24)&255)/255f;
         if(fluid.getFluid()==Fluids.LAVA)light=LightTexture.FULL_BRIGHT;
         var water=buffers.getBuffer(Sheets.translucentCullBlockSheet());
@@ -49,8 +46,10 @@ public final class PoolRenderer implements BlockEntityRenderer<PoolBlockEntity> 
         // Keep backface culling: the opposite winding exposes the surface only from below.
         polygon(water,matrix,cell.water(),cell,part.waterY(),waterSprite,r,g,b,a,light,false);
         if(part.isController()&&part.circulating()) {
+            var flowingTexture=BathFluidAppearance.texture(part,part.getLevel(),part.getBlockPos(),true);
+            var flowingSprite=Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(flowingTexture);
             var f=part.layout().faucet();double x=f.x()-cell.x(),z=.57-cell.z();
-            box(water,matrix,x-.035,part.waterY(),z-.035,x+.035,1.18,z+.035,waterSprite,r,g,b,a,light);
+            box(water,matrix,x-.035,part.waterY(),z-.035,x+.035,1.18,z+.035,flowingSprite,r,g,b,a,light);
         }
     }
 

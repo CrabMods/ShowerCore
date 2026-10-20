@@ -1,0 +1,31 @@
+{
+  "id": "hotbath:contract_quiet",
+  "color": 16777215,
+  "temperature": 18.0,
+  "viscosity": 4321,
+  "density": 1350,
+  "luminosity": 0,
+  "opacity": 0.45,
+  "nutrition": 7,
+  "thirst": 9,
+  "show_particles": false,
+  "show_bubbles": false,
+  "show_steam": false,
+  "effects": [
+    {
+      "effect": "minecraft:speed",
+      "duration": 80,
+      "amplifier": 2,
+      "ambient": true,
+      "show_particles": false,
+      "show_icon": false
+    }
+  ],
+  "trigger_time_seconds": 2,
+  "texture_still": "minecraft:block/blue_concrete",
+  "texture_flowing": "minecraft:block/red_concrete",
+  "translations": {
+    "en_us": "Datapack Contract Bath",
+    "zh_cn": "属性回归浴液"
+  }
+}

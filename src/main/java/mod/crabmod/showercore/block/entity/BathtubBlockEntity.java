@@ -1,7 +1,5 @@
 package mod.crabmod.showercore.block.entity;
 
-import com.crabmod.hotbath.custom_fluid.CustomFluidAPI;
-import com.crabmod.hotbath.custom_fluid.CustomFluidDefinition;
 import mod.crabmod.showercore.registers.BlockEntitiesRegister;
 import mod.crabmod.showercore.block.BathtubBlock;
 import net.minecraft.core.BlockPos;
@@ -16,7 +14,6 @@ import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Optional;
 import mod.crabmod.showercore.material.BathtubMaterialFace;
 
 public class BathtubBlockEntity extends BlockEntity implements mod.crabmod.showercore.pool.BathFluidSource {
@@ -91,9 +88,7 @@ public class BathtubBlockEntity extends BlockEntity implements mod.crabmod.showe
     private void updateLightLevel() {
         if (level == null || level.isClientSide) return;
         BlockState state = level.getBlockState(getBlockPos());
-        int light = state.getValue(BathtubBlock.LIQUID) == BathtubBlock.LiquidType.CUSTOM
-                ? getCustomFluidDefinition().map(CustomFluidDefinition::luminosity).orElse(0) : 0;
-        light = Math.max(0, Math.min(15, light));
+        int light=luminosity();
         // The light worker cannot read server block entities. A native state property
         // gives both sides the same emission and lets vanilla propagate normal updates.
         if (state.getValue(BathtubBlock.LIGHT_LEVEL) != light) {
@@ -101,15 +96,9 @@ public class BathtubBlockEntity extends BlockEntity implements mod.crabmod.showe
         }
     }
 
-    /**
-     * Gets the custom fluid definition for the stored custom fluid ID.
-     * @return Optional containing the definition if the ID is set and the fluid is registered
-     */
-    public Optional<CustomFluidDefinition> getCustomFluidDefinition() {
-        if (customFluidId == null) {
-            return Optional.empty();
-        }
-        return CustomFluidAPI.getFluidDefinition(customFluidId);
+    @Override
+    public net.neoforged.neoforge.fluids.FluidStack fluid() {
+        return fluidTank.getFluid();
     }
 
     @Override
@@ -158,5 +147,23 @@ public class BathtubBlockEntity extends BlockEntity implements mod.crabmod.showe
 
     public FluidTank getFluidTank() {
         return fluidTank;
+    }
+
+    @Override
+    public boolean touchesBathFluid(net.minecraft.world.phys.AABB bounds) {
+        if(fluid().isEmpty())return false;
+        var state=getBlockState();var facing=state.getValue(BathtubBlock.FACING);
+        var part=state.getValue(BathtubBlock.PART);
+        double minX=.125,maxX=.875,minZ=.125,maxZ=.875;
+        var connection=part==net.minecraft.world.level.block.state.properties.BedPart.FOOT?facing:facing.getOpposite();
+        switch(connection){case NORTH->minZ=0;case SOUTH->maxZ=1;case WEST->minX=0;case EAST->maxX=1;default->{}}
+        return bounds.intersects(new net.minecraft.world.phys.AABB(worldPosition.getX()+minX,worldPosition.getY()+.25,worldPosition.getZ()+minZ,
+                worldPosition.getX()+maxX,worldPosition.getY()+BathtubBlock.waterLevelFor(state),worldPosition.getZ()+maxZ));
+    }
+    @Override public double bathSurfaceY() {
+        return worldPosition.getY()+BathtubBlock.waterLevelFor(getBlockState());
+    }
+    @Override public void refreshBathDefinition() {
+        updateLightLevel();
     }
 }

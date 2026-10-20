@@ -90,7 +90,7 @@ class BathtubBERRenderingRegressionTest {
     @DisplayName("BER fetches texture from IClientFluidTypeExtensions.getStillTexture()")
     void fetchesTextureFromFluidType() throws IOException {
         String source = TestSourceUtils.readSource(BER_SOURCE);
-        assertTrue(GET_STILL_TEXTURE.matcher(source).find(),
+        assertTrue(GET_STILL_TEXTURE.matcher(source + java.nio.file.Files.readString(java.nio.file.Path.of("src/main/java/mod/crabmod/showercore/client/renderer/BathFluidAppearance.java"))).find(),
                 "BathtubBlockEntityRenderer must call getStillTexture() on the fluid's "
                         + "IClientFluidTypeExtensions to get the correct grayscale texture.");
     }
@@ -159,9 +159,8 @@ class BathtubBERRenderingRegressionTest {
     @DisplayName("BER fetches per-fluid color via CustomFluidAPI.getFluidColor")
     void usesCustomFluidAPIColor() throws IOException {
         String source = TestSourceUtils.readSource(BER_SOURCE);
-        assertTrue(source.contains("CustomFluidAPI.getFluidColor"),
-                "BER must call CustomFluidAPI.getFluidColor(customFluidId) to get the "
-                        + "per-fluid color for custom fluids, not rely on the shared FluidType "
-                        + "tint which is identical across all custom fluid variants.");
+        String appearance = java.nio.file.Files.readString(java.nio.file.Path.of("src/main/java/mod/crabmod/showercore/client/renderer/BathFluidAppearance.java"));
+        assertTrue(source.contains("BathFluidAppearance.tint")&&appearance.contains("CustomFluidAPI.getFluidColor"),
+                "All bath shapes must share the existing Hot Bath per-fluid ARGB resolver.");
     }
 }

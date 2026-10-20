@@ -35,10 +35,7 @@ public final class PoolBlock extends Block implements EntityBlock,BathFaucet,mod
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b) {b.add(CONTROLLER,LIGHT);}
     @Override public RenderShape getRenderShape(BlockState state) {return RenderShape.ENTITYBLOCK_ANIMATED;}
     @Override public BlockEntity newBlockEntity(BlockPos pos,BlockState state) {return new PoolBlockEntity(pos,state);}
-    @Override @Nullable public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level,BlockState state,BlockEntityType<T> type) {
-        return !level.isClientSide&&state.getValue(CONTROLLER)&&type==BlockEntitiesRegister.BATHING_POOL.get()
-                ?(l,p,s,be)->PoolBlockEntity.tick(l,p,s,(PoolBlockEntity)be):null;
-    }
+
     @Override public VoxelShape getShape(BlockState state,BlockGetter level,BlockPos pos,CollisionContext context) {
         if(level.getBlockEntity(pos) instanceof PoolBlockEntity part&&part.configured()) {
             var cell=part.cell();if(cell!=null)return PoolCollision.shape(part.settings().spec(),cell.x(),cell.z());
@@ -92,14 +89,17 @@ public final class PoolBlock extends Block implements EntityBlock,BathFaucet,mod
         }
     }
 
+    @Override public void entityInside(BlockState state,Level level,BlockPos pos,net.minecraft.world.entity.Entity entity) {
+        if(!level.isClientSide&&level.getBlockEntity(pos) instanceof PoolBlockEntity part)part.applyBathEffects(entity);
+        super.entityInside(state,level,pos,entity);
+    }
+
     @Override public void animateTick(BlockState state,Level level,BlockPos pos,RandomSource random) {
-        if(random.nextInt(10)!=0||!(level.getBlockEntity(pos) instanceof PoolBlockEntity part)||!part.emitsSteam())return;
-        var layout=part.layout();var cell=layout.cell(pos.getX()-part.origin().getX(),pos.getZ()-part.origin().getZ());
+        if(!(level.getBlockEntity(pos) instanceof PoolBlockEntity part)||!part.active()||part.fluid().isEmpty())return;
+        var layout=part.layout();var cell=part.cell();
         if(cell==null||cell.water().isEmpty())return;
         double x=cell.x()+random.nextDouble(),z=cell.z()+random.nextDouble();
-        if(!layout.containsWater(x,z))return;
-        level.addParticle(com.crabmod.hotbath.registers.ParticleRegister.STEAM_PARTICLE.get(),
-                part.origin().getX()+x,part.origin().getY()+part.waterY()+.02,part.origin().getZ()+z,0,.02,0);
+        if(layout.containsWater(x,z))part.animateSurface(random,part.origin().getX()+x,part.bathSurfaceY(),part.origin().getZ()+z);
     }
 
     @Override public mod.crabmod.showercore.geometry.BathMountSurface.Support showerSupport(Level level,BlockPos clicked,BlockHitResult hit,mod.crabmod.showercore.geometry.BathroomGeometry.Shower shower) {

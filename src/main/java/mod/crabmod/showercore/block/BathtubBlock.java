@@ -198,8 +198,7 @@ public class BathtubBlock extends HorizontalDirectionalBlock implements EntityBl
       LiquidType liquid = state.getValue(LIQUID);
       if (liquid == LiquidType.EMPTY || liquid == LiquidType.WATER) return;
 
-      boolean isHot = (liquid != LiquidType.CUSTOM)
-              || mod.crabmod.showercore.utils.CoreUtils.isCustomFluidHotAt(level, pos);
+      boolean isHot = be.isHot();
       if (!isHot) return;
 
       final int radius = 3;
@@ -744,48 +743,11 @@ public class BathtubBlock extends HorizontalDirectionalBlock implements EntityBl
 
   @Override
   public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
-    LiquidType liquid = state.getValue(LIQUID);
-    boolean produceSteam = false;
-
-    if (liquid == LiquidType.CUSTOM) {
-         BlockEntity be = level.getBlockEntity(pos);
-         if (be instanceof BathtubBlockEntity bathtubBe) {
-             // Check custom fluid definition for steam settings
-             Optional<CustomFluidDefinition> defOpt = bathtubBe.getCustomFluidDefinition();
-             if (defOpt.isPresent()) {
-                 CustomFluidDefinition def = defOpt.get();
-                 if (def.isHot() && def.showSteam()) {
-                     produceSteam = true;
-                 }
-             } else {
-                 // Fallback: check config-based steam fluids for non-hotBath custom fluids
-                 FluidStack fluidStack = bathtubBe.getFluidTank().getFluid();
-                 if (!fluidStack.isEmpty()) {
-                     Fluid fluid = fluidStack.getFluid();
-                     if (Config.steamFluids.contains(fluid)) {
-                         produceSteam = true;
-                     }
-                 }
-             }
-         }
-    } else if (liquid != LiquidType.EMPTY && liquid != LiquidType.WATER) {
-        produceSteam = true;
+    if(!(level.getBlockEntity(pos) instanceof BathtubBlockEntity tub)||tub.fluid().isEmpty())return;
+    double x=pos.getX()+.5+(random.nextDouble()-.5)*.7;
+    double z=pos.getZ()+.5+(random.nextDouble()-.5)*.7;
+    tub.animateSurface(random,x,tub.bathSurfaceY(),z);
     }
-
-    if (produceSteam && random.nextInt(10) == 0) {
-      double x = (double) pos.getX() + 0.5D + (random.nextDouble() - 0.5D) * 0.8D;
-      double y = (double) pos.getY() + 0.9D;
-      double z = (double) pos.getZ() + 0.5D + (random.nextDouble() - 0.5D) * 0.8D;
-      level.addParticle((ParticleOptions) ParticleRegister.STEAM_PARTICLE.get(), x, y, z, 0.0D, 0.02D, 0.0D);
-    }
-
-    // Bubble particles (HotBathBubbleParticle) are intentionally NOT spawned in bathtubs:
-    // that particle's tick() removes itself unless the blockpos contains water or an
-    // AbstractHotbathBlock. A BathtubBlock is neither, so every spawned bubble died on
-    // its first tick and appeared as a single-frame flicker. The showBubbles flag still
-    // takes effect for hotBath's own fluid blocks (CustomFluidBlock) where the particle
-    // survives correctly.
-  }
 
   @Override
   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
@@ -796,62 +758,12 @@ public class BathtubBlock extends HorizontalDirectionalBlock implements EntityBl
 
   @Override
   public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
-      LiquidType liquid = state.getValue(LIQUID);
-
-      if (liquid == LiquidType.CUSTOM) {
-          BlockEntity be = level.getBlockEntity(pos);
-          if (be instanceof BathtubBlockEntity bathtubBe) {
-              // Check for custom fluid definition and apply its effects
-              Optional<CustomFluidDefinition> defOpt = bathtubBe.getCustomFluidDefinition();
-              if (defOpt.isPresent()) {
-                  ResourceLocation fluidId = bathtubBe.getCustomFluidId();
-                  if (fluidId != null && entity instanceof ServerPlayer serverPlayer && !level.isClientSide) {
-                      CustomFluidAPI.applyFluidEffects(serverPlayer, fluidId);
-                  }
-              } else {
-                  // No custom fluid definition; handle special cases like lava
-                  FluidStack fluidStack = bathtubBe.getFluidTank().getFluid();
-                  if (!fluidStack.isEmpty()) {
-                      Fluid fluid = fluidStack.getFluid();
-                      if (fluid == Fluids.LAVA || fluid == Fluids.FLOWING_LAVA) {
-                          entity.setSecondsOnFire(15);
-                          entity.hurt(level.damageSources().lava(), 4.0F);
-                      }
-                  }
-              }
-          }
-      }
-
-      // Apply vanilla bath effects to entities standing in the bathtub. This shares
-      // the seated path's effect table and cadence, so standing and sitting behave
-      // consistently without refreshing effect icons every tick.
-      if (!level.isClientSide
-              && entity instanceof LivingEntity living
-              && entity.tickCount % 20 == 0) {
-          SeatEntity.applyBathEffects(living, liquid, level, pos);
-      }
-
-      // === Hot bathtub interactions (server-side only) ===
-      if (!level.isClientSide && liquid != LiquidType.EMPTY && liquid != LiquidType.WATER) {
-          boolean isHot = (liquid != LiquidType.CUSTOM) ||
-                  mod.crabmod.showercore.utils.CoreUtils.isCustomFluidHotAt(level, pos);
-
-          if (isHot) {
-              // Dirtiness cleaning is handled by DirtinessHandlerMixin injecting into
-              // hotBath's isInHotBathFluid() - no direct call needed here to avoid double cleaning.
-
-              // Twilight Forest ice mobs take damage in hot bathtub (1 damage/sec)
-              if (entity.tickCount % 20 == 0
-                      && mod.crabmod.showercore.compat.ShowerCoreCompat.isTwilightForestIceMob(entity)) {
-                  entity.hurt(level.damageSources().magic(), 1.0F);
-              }
-
-              // Alex's Caves GummyBear melts in hot bathtub (0.5 damage/sec)
-              if (entity.tickCount % 20 == 0
-                      && mod.crabmod.showercore.compat.ShowerCoreCompat.isGummyBear(entity)) {
-                  entity.hurt(level.damageSources().magic(), 0.5F);
-              }
-
+      if(!level.isClientSide&&level.getBlockEntity(pos) instanceof BathtubBlockEntity tub) {
+          tub.applyBathEffects(entity);
+          // Preserve the existing optional-mod interactions; base bath effects are owned by Hot Bath.
+          if(tub.isHot()&&(tub.getCustomFluidDefinition().isPresent()||tub.getBuiltinBathDefinition().isPresent())) {
+              if(entity.tickCount%20==0&&mod.crabmod.showercore.compat.ShowerCoreCompat.isGummyBear(entity))
+                  entity.hurt(level.damageSources().magic(),.5f);
               // Serene Seasons: winter hot-bath resistance boost.
               // Early winter  -> Resistance I (10s)
               // Mid winter    -> Resistance II + Regeneration I (10s)
@@ -875,9 +787,8 @@ public class BathtubBlock extends HorizontalDirectionalBlock implements EntityBl
               }
           }
       }
-
-      super.entityInside(state, level, pos, entity);
-  }
+      super.entityInside(state,level,pos,entity);
+    }
 
   @Override
   public InteractionResult useFaucet(Level level, BlockPos pos, BlockState state, Player player) {

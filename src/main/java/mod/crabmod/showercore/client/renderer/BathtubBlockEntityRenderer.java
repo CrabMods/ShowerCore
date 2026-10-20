@@ -1,6 +1,5 @@
 package mod.crabmod.showercore.client.renderer;
 
-import com.crabmod.hotbath.custom_fluid.CustomFluidAPI;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import mod.crabmod.showercore.block.BathtubBlock;
@@ -19,7 +18,6 @@ import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.minecraftforge.fluids.FluidStack;
 import org.joml.Matrix4f;
 
@@ -38,8 +36,7 @@ public class BathtubBlockEntityRenderer implements BlockEntityRenderer<BathtubBl
         if (fluidStack.isEmpty()) return;
 
         Fluid fluid = fluidStack.getFluid();
-        IClientFluidTypeExtensions fluidTypeExtensions = IClientFluidTypeExtensions.of(fluid);
-        ResourceLocation stillTexture = fluidTypeExtensions.getStillTexture(fluidStack);
+        ResourceLocation stillTexture = BathFluidAppearance.texture(pBlockEntity,pBlockEntity.getLevel(),pBlockEntity.getBlockPos(),false);
 
         // Lava is emissive in vanilla; use full-bright so the drop/surface don't appear dim in
         // dark rooms.
@@ -48,12 +45,7 @@ public class BathtubBlockEntityRenderer implements BlockEntityRenderer<BathtubBl
 
         TextureAtlasSprite sprite = Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(stillTexture);
 
-        // Legacy bathtubs keep their custom fluid identity separately from the tank stack.
-        int color = pBlockEntity.getCustomFluidDefinition()
-                .map(definition -> CustomFluidAPI.getFluidColor(definition.id()))
-                .orElseGet(() -> pBlockEntity.getLevel() != null
-                        ? fluidTypeExtensions.getTintColor(fluid.defaultFluidState(), pBlockEntity.getLevel(), pBlockEntity.getBlockPos())
-                        : fluidTypeExtensions.getTintColor(fluidStack));
+        int color = BathFluidAppearance.tint(pBlockEntity,pBlockEntity.getLevel(),pBlockEntity.getBlockPos());
 
         float alpha = ((color >> 24) & 0xFF) / 255f;
         float red = ((color >> 16) & 0xFF) / 255f;
@@ -104,8 +96,10 @@ public class BathtubBlockEntityRenderer implements BlockEntityRenderer<BathtubBl
         // the tub and faucet geometry.
         if (BathtubDropGeometry.shouldRenderDrop(part == BedPart.HEAD, state.getValue(BathtubBlock.RUNNING))) {
             float[] b = BathtubDropGeometry.computeDropBounds(toFaucetSide(facing), BathtubBlock.geometryFor(state));
+            var flowingTexture=BathFluidAppearance.texture(pBlockEntity,pBlockEntity.getLevel(),pBlockEntity.getBlockPos(),true);
+            var flowingSprite=Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(flowingTexture);
             renderDropCube(builder, matrix, b[0], b[1], b[2], b[3], b[4], b[5],
-                    sprite, red, green, blue, alpha, lightForFluid);
+                    flowingSprite, red, green, blue, alpha, lightForFluid);
         }
 
         pPoseStack.popPose();

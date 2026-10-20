@@ -1,6 +1,5 @@
 package mod.crabmod.showercore.entity;
 
-import com.crabmod.hotbath.custom_fluid.CustomFluidAPI;
 import mod.crabmod.showercore.block.BathtubBlock;
 import mod.crabmod.showercore.block.entity.BathtubBlockEntity;
 import net.minecraft.core.BlockPos;
@@ -12,15 +11,10 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
 
 public class SeatEntity extends Entity {
     private static final EntityDataAccessor<Byte> POOL_SEAT_KIND =
@@ -79,113 +73,14 @@ public class SeatEntity extends Entity {
     @Override
     public void tick() {
         super.tick();
-        if (!this.level().isClientSide) {
-            if (this.tickCount > 5 && this.getPassengers().isEmpty()) {
-                this.discard();
-            }
-
-            if (poolId != null) {
-                if (!mod.crabmod.showercore.pool.PoolSeats.updateSeat(this)) { ejectPassengers(); discard(); }
-                return;
-            }
-            if (this.tickCount % 20 == 0) {
-                BlockPos pos = this.blockPosition();
-                BlockState state = this.level().getBlockState(pos);
-                if (state.getBlock() instanceof BathtubBlock) {
-                    BathtubBlock.LiquidType liquid = state.getValue(BathtubBlock.LIQUID);
-                    for (Entity passenger : this.getPassengers()) {
-                        if (passenger instanceof LivingEntity living) {
-                            applyBathEffects(living, liquid, this.level(), pos);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    public static void applyBathEffects(LivingEntity entity, BathtubBlock.LiquidType liquid, Level level, BlockPos pos) {
-        if (entity.level().isClientSide) return;
-
-        long gameTime = entity.level().getGameTime();
-        CompoundTag data = entity.getPersistentData();
-
-        String currentLiquid = data.getString("showercore.bath.liquid");
-        long lastSeen = data.getLong("showercore.bath.last_seen");
-        if (!currentLiquid.equals(liquid.name()) || gameTime - lastSeen > 30) {
-            data.putString("showercore.bath.liquid", liquid.name());
-            data.putLong("showercore.bath.start", gameTime);
-        }
-        data.putLong("showercore.bath.last_seen", gameTime);
-
-        long bathingTime = gameTime - data.getLong("showercore.bath.start");
-
-        boolean shouldRefreshBuffs = gameTime - data.getLong("showercore.bath.buff_refresh") >= 200;
-        if (shouldRefreshBuffs) data.putLong("showercore.bath.buff_refresh", gameTime);
-
-        boolean shouldCleanse = bathingTime >= 300
-                && gameTime - data.getLong("showercore.bath.cleanse") >= 300;
-        if (shouldCleanse) data.putLong("showercore.bath.cleanse", gameTime);
-
-        switch (liquid) {
-            case HOT_WATER -> {
-                if (shouldRefreshBuffs) {
-                    ShowerHeadContainerEntity.addStackingEffect(entity, MobEffects.MOVEMENT_SPEED, 400, 1);
-                }
-            }
-            case HERBAL_BATH -> {
-                if (shouldRefreshBuffs) {
-                    ShowerHeadContainerEntity.addStackingEffect(entity, MobEffects.REGENERATION, 400, 1);
-                    ShowerHeadContainerEntity.addStackingEffect(entity, MobEffects.DAMAGE_RESISTANCE, 400, 1);
-                }
-                if (shouldCleanse) ShowerHeadContainerEntity.cureNegativeEffects(entity);
-            }
-            case HONEY_BATH -> {
-                if (shouldRefreshBuffs) {
-                    ShowerHeadContainerEntity.addStackingEffect(entity, MobEffects.REGENERATION, 400, 1);
-                    ShowerHeadContainerEntity.addStackingEffect(entity, MobEffects.ABSORPTION, 400, 3);
-                }
-                if (shouldCleanse) ShowerHeadContainerEntity.cureNegativeEffectsExceptSlow(entity);
-            }
-            case MILK_BATH -> {
-                if (shouldRefreshBuffs) {
-                    ShowerHeadContainerEntity.addStackingEffect(entity, MobEffects.REGENERATION, 400, 1);
-                }
-                if (shouldCleanse) ShowerHeadContainerEntity.cureNegativeEffects(entity);
-            }
-            case PEONY_BATH -> {
-                if (shouldRefreshBuffs) {
-                    ShowerHeadContainerEntity.addStackingEffect(entity, MobEffects.REGENERATION, 400, 1);
-                    ShowerHeadContainerEntity.addStackingEffect(entity, MobEffects.LUCK, 400, 1);
-                    ShowerHeadContainerEntity.addStackingEffect(entity, MobEffects.DIG_SPEED, 400, 1);
-                }
-                if (shouldCleanse) {
-                    ShowerHeadContainerEntity.cureNegativeEffects(entity);
-                    entity.removeEffect(MobEffects.BAD_OMEN);
-                }
-            }
-            case ROSE_BATH -> {
-                if (shouldRefreshBuffs) {
-                    ShowerHeadContainerEntity.addStackingEffect(entity, MobEffects.REGENERATION, 400, 1);
-                    ShowerHeadContainerEntity.addStackingEffect(entity, MobEffects.DAMAGE_BOOST, 400, 1);
-                }
-                if (shouldCleanse) {
-                    ShowerHeadContainerEntity.cureNegativeEffects(entity);
-                    entity.removeEffect(MobEffects.BAD_OMEN);
-                }
-            }
-            case CUSTOM -> {
-                if (shouldRefreshBuffs && entity instanceof ServerPlayer serverPlayer) {
-                    BlockEntity be = level.getBlockEntity(pos);
-                    if (be instanceof mod.crabmod.showercore.pool.BathFluidSource bathtubBe) {
-                        ResourceLocation fluidId = bathtubBe.getCustomFluidId();
-                        if (fluidId != null) {
-                            CustomFluidAPI.applyFluidEffects(serverPlayer, fluidId);
-                        }
-                    }
-                }
-            }
-            default -> {}
-        }
+        if(level().isClientSide)return;
+        if(tickCount>5&&getPassengers().isEmpty()){discard();return;}
+        mod.crabmod.showercore.pool.BathFluidSource source=null;
+        if(poolId!=null) {
+            if(!mod.crabmod.showercore.pool.PoolSeats.updateSeat(this)){ejectPassengers();discard();return;}
+            if(level().getBlockEntity(poolOwner) instanceof mod.crabmod.showercore.pool.PoolBlockEntity pool)source=pool;
+        } else if(level().getBlockEntity(blockPosition()) instanceof BathtubBlockEntity tub)source=tub;
+        if(source!=null)for(var passenger:getPassengers())source.applyBathEffects(passenger);
     }
 
     @Override

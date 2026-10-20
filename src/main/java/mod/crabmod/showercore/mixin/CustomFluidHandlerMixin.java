@@ -19,7 +19,7 @@ public class CustomFluidHandlerMixin {
      */
     @Inject(method = "isPlayerInHotBathBlock", at = @At("HEAD"), cancellable = true, remap = false)
     private static void isPlayerInHotBathBlock(Player player, CallbackInfoReturnable<Boolean> cir) {
-        if (CoreUtils.isPlayerInShowerCoreHotWater(player)) {
+        if (CoreUtils.isPlayerInShowerCoreBath(player)) {
             cir.setReturnValue(true);
         }
     }
@@ -42,7 +42,7 @@ public class CustomFluidHandlerMixin {
      */
     @Inject(method = "getBathTemperature", at = @At("HEAD"), cancellable = true, remap = false)
     private static void getBathTemperature(Player player, CallbackInfoReturnable<Float> cir) {
-        if (CoreUtils.isPlayerInShowerCoreHotWater(player)) {
+        if (CoreUtils.isPlayerInShowerCoreBath(player) || CoreUtils.isPlayerInShowerCoreHotWater(player)) {
             cir.setReturnValue(CoreUtils.getShowerCoreBathTemperature(player));
         }
     }

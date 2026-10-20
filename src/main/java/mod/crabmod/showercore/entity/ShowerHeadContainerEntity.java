@@ -1,6 +1,7 @@
 package mod.crabmod.showercore.entity;
 
 import mod.crabmod.showercore.block.ShowerHeadBlock;
+import mod.crabmod.showercore.Config;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -69,6 +70,7 @@ public class ShowerHeadContainerEntity extends BaseShowerHeadBlockEntity {
    */
   public static void cleanupPlayer(UUID playerUUID) {
     PLAYERS_UNDER_ACTIVE_SHOWER.remove(playerUUID);
+    com.crabmod.hotbath.api.HotBathApi.endShowerContact(playerUUID);
   }
 
   public ShowerHeadContainerEntity(BlockPos pos, BlockState state) {
@@ -192,7 +194,10 @@ public class ShowerHeadContainerEntity extends BaseShowerHeadBlockEntity {
   }
 
   private void clearTrackedPlayers() {
-    for (UUID player : timeUnderShower.keySet()) PLAYERS_UNDER_ACTIVE_SHOWER.remove(player, this);
+    for (UUID player : timeUnderShower.keySet()) {
+        PLAYERS_UNDER_ACTIVE_SHOWER.remove(player,this);
+        if(!PLAYERS_UNDER_ACTIVE_SHOWER.contains(player))com.crabmod.hotbath.api.HotBathApi.endShowerContact(player);
+    }
     timeUnderShower.clear();
   }
 
@@ -252,10 +257,10 @@ public class ShowerHeadContainerEntity extends BaseShowerHeadBlockEntity {
       // Track players under active shower for compat mod integration
       if (livingEntity instanceof net.minecraft.world.entity.player.Player) {
         PLAYERS_UNDER_ACTIVE_SHOWER.add(uuid, entity);
+        com.crabmod.hotbath.api.HotBathApi.reportShowerContact(livingEntity,40f,true,Config.isModIntegrationsEnabled());
       }
 
-      // Dirtiness cleaning is handled by DirtinessHandlerMixin injecting into
-      // hotBath's isInHotBathFluid() - no direct call needed here to avoid double cleaning.
+      // Hot Bath's dirtiness consumer uses this shower contact alongside any immersion.
 
       if (time >= 100) { // 5 seconds
         applyEffects(livingEntity, core);
@@ -266,6 +271,7 @@ public class ShowerHeadContainerEntity extends BaseShowerHeadBlockEntity {
     for (UUID tracked : entity.timeUnderShower.keySet()) {
       if (!currentEntities.contains(tracked)) {
         PLAYERS_UNDER_ACTIVE_SHOWER.remove(tracked, entity);
+        if(!PLAYERS_UNDER_ACTIVE_SHOWER.contains(tracked))com.crabmod.hotbath.api.HotBathApi.endShowerContact(tracked);
       }
     }
 

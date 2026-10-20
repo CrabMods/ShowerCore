@@ -4,8 +4,6 @@
   "package": "mod.crabmod.showercore.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "CustomFluidHandlerMixin",
-    "DirtinessHandlerMixin",
     "PoolEntityFluidMixin",
     "PoolLivingFluidMixin"
   ],

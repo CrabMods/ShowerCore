@@ -1,67 +1,56 @@
 package mod.crabmod.showercore.pool;
 
-import com.crabmod.hotbath.custom_fluid.BuiltinBathDefinition;
-import com.crabmod.hotbath.custom_fluid.BuiltinBathDefinitions;
-import com.crabmod.hotbath.custom_fluid.CustomFluidDefinition;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.Entity;
+import com.crabmod.hotbath.api.HotBathApi;
+import com.crabmod.hotbath.api.BathFluidProperties;
+import com.crabmod.hotbath.custom_fluid.*;
 import mod.crabmod.showercore.Config;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraftforge.fluids.FluidStack;
 import org.jetbrains.annotations.Nullable;
 import java.util.Optional;
 
-/** Container adapter over Hot Bath's existing, reloadable fluid definitions. */
-public interface BathFluidSource extends com.crabmod.hotbath.api.BathFluidContainer {
+/** ShowerCore owns container identity, geometry, contact and reload handling. */
+public interface BathFluidSource {
+    FluidStack fluid();
+    @Nullable ResourceLocation getCustomFluidId();
     @Nullable Level getLevel();
-    net.minecraft.core.BlockPos getBlockPos();
+    BlockPos getBlockPos();
+    boolean touchesBathFluid(AABB bounds);
+    double bathSurfaceY();
+    void refreshBathDefinition();
 
+    default Optional<CustomFluidDefinition> getCustomFluidDefinition() {
+        return fluid().isEmpty()?Optional.empty():CustomFluidAPI.getCustomFluidDefinition(fluid());
+    }
     default Optional<BuiltinBathDefinition> getBuiltinBathDefinition() {
         return fluid().isEmpty()?Optional.empty():BuiltinBathDefinitions.forFluid(fluid().getFluid(),getLevel()!=null&&getLevel().isClientSide());
     }
+    default BathFluidProperties properties() {return HotBathApi.fluidProperties(fluid(),getLevel()!=null&&getLevel().isClientSide());}
+    default int luminosity() {return Math.max(0,Math.min(15,properties().luminosity()));}
+    default float temperature() {return properties().temperatureCelsius();}
+    default boolean isHot() {return properties().hot();}
+    default boolean emitsSteam() {return properties().steam()||!fluid().isEmpty()&&!HotBathApi.isBathFluid(fluid().getFluid())&&Config.steamFluids.contains(fluid().getFluid());}
 
-    default int luminosity() {
-        if(fluid().isEmpty())return 0;
-        return Math.max(0,Math.min(15,getCustomFluidDefinition().map(CustomFluidDefinition::luminosity)
-                .orElseGet(()->fluid().getFluid().getFluidType().getLightLevel(fluid()))));
-    }
-
-    default boolean isHot() {
-        if(fluid().isEmpty())return false;
-        return getCustomFluidDefinition().map(CustomFluidDefinition::isHot)
-                .orElseGet(()->getBuiltinBathDefinition().map(BuiltinBathDefinition::isHot)
-                        .orElseGet(()->temperature()>=CustomFluidDefinition.HOT_TEMPERATURE_THRESHOLD));
-    }
-
-    default float temperature() {
-        if(fluid().isEmpty())return 0f;
-        return getCustomFluidDefinition().map(CustomFluidDefinition::temperature)
-                .orElseGet(()->getBuiltinBathDefinition().map(BuiltinBathDefinition::temperature).orElseGet(()->fluid().getFluid().getFluidType().getTemperature(fluid())-273f));
-    }
-
-    default boolean emitsSteam() {
-        if(fluid().isEmpty())return false;
-        var custom=getCustomFluidDefinition();
-        if(custom.isPresent())return custom.get().isHot()&&custom.get().showSteam();
-        return getBuiltinBathDefinition().map(BuiltinBathDefinition::isHot)
-                .orElseGet(()->Config.steamFluids.contains(fluid().getFluid()));
-    }
-
-    default void applyBathEffects(net.minecraft.world.entity.Entity entity) {
+    default void applyBathEffects(Entity entity) {
         var level=getLevel();
-        if(level==null||level.isClientSide()||fluid().isEmpty()||!touchesBathFluid(entity.getBoundingBox()))return;
-        var block=fluid().getFluid().defaultFluidState().createLegacyBlock().getBlock();
-        if(block instanceof com.crabmod.hotbath.fluid_blocks.AbstractHotbathBlock bath) {
-            bath.entityInside(bath.defaultBlockState(),level,getBlockPos(),entity);
-        } else if(fluid().getFluid()==Fluids.LAVA||fluid().getFluid()==Fluids.FLOWING_LAVA) {
-            entity.setRemainingFireTicks(300);
-            entity.hurt(level.damageSources().lava(),4f);
-        }
+        if(level==null||fluid().isEmpty()||!touchesBathFluid(entity.getBoundingBox()))return;
+        HotBathApi.reportFluidContact(entity,fluid(),bathSurfaceY(),Config.isModIntegrationsEnabled());
+        if(level.isClientSide())return;
+        HotBathApi.applyFluidContact(entity,fluid());
+        // Pools provide native fluid depth; Entity.baseTick already handles their lava damage.
+        if(!(this instanceof PoolBlockEntity)&&(fluid().getFluid()==Fluids.LAVA||fluid().getFluid()==Fluids.FLOWING_LAVA))
+            entity.lavaHurt();
     }
+    @net.minecraftforge.api.distmarker.OnlyIn(net.minecraftforge.api.distmarker.Dist.CLIENT)
     default void animateSurface(net.minecraft.util.RandomSource random,double x,double y,double z) {
-        var level=getLevel();
-        if(level==null||fluid().isEmpty())return;
-        var block=fluid().getFluid().defaultFluidState().createLegacyBlock().getBlock();
-        if(block instanceof com.crabmod.hotbath.fluid_blocks.AbstractHotbathBlock bath)bath.animateContainedSurface(level,getBlockPos(),random,x,y,z);
-        else if(emitsSteam()&&random.nextInt(10)==0)
-            level.addParticle(com.crabmod.hotbath.registers.ParticleRegister.STEAM_PARTICLE.get(),x,y+.02,z,0,.02,0);
+        if(!(getLevel() instanceof net.minecraft.client.multiplayer.ClientLevel client)||fluid().isEmpty())return;
+        com.crabmod.hotbath.api.client.BathFluidVisuals.animateSurface(client,fluid(),random,x,y,z,bounds->properties().bubbles()&&touchesBathFluid(bounds));
+        if(!HotBathApi.isBathFluid(fluid().getFluid())&&emitsSteam()&&random.nextInt(10)==0)
+            client.addParticle(com.crabmod.hotbath.registers.ParticleRegister.STEAM_PARTICLE.get(),x,y+.02,z,0,.02,0);
     }
 }

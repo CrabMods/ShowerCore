@@ -205,14 +205,30 @@ public final class PoolGameTests {
     }
     @GameTest(template="pool_empty") public static void pool_inside_seat_claim_release_and_save(GameTestHelper h){seating(h,PoolLayout.SeatKind.INSIDE);}
     @GameTest(template="pool_empty") public static void pool_rim_seat_claim_release_and_save(GameTestHelper h){seating(h,PoolLayout.SeatKind.RIM);}
-    @GameTest(template="pool_empty",timeoutTicks=260) public static void pool_effects_require_actual_water_contact(GameTestHelper h){
+    @GameTest(template="pool_empty",timeoutTicks=400) public static void pool_effects_require_actual_water_contact(GameTestHelper h){
         var p=player(h,RECT,false);var owner=place(h,RECT,p);
         var hot=BuiltInRegistries.FLUID.get(new ResourceLocation("hotbath:hot_water_fluid"));
         owner.fluidHandler().fill(new FluidStack(hot,owner.layout().capacity()),IFluidHandler.FluidAction.EXECUTE);
-        var wet=new ArmorStand(h.getLevel(),origin(h).getX()+2.5,origin(h).getY()+.2,origin(h).getZ()+2.5);
-        var dry=new ArmorStand(h.getLevel(),origin(h).getX()+2.5,origin(h).getY()+1.2,origin(h).getZ()+2.5);
-        wet.setNoGravity(true);dry.setNoGravity(true);h.getLevel().addFreshEntity(wet);h.getLevel().addFreshEntity(dry);
-        h.runAtTickTime(220,()->{try{
+        var wet=new net.minecraft.world.entity.animal.Pig(net.minecraft.world.entity.EntityType.PIG,h.getLevel());
+        var dry=new net.minecraft.world.entity.animal.Pig(net.minecraft.world.entity.EntityType.PIG,h.getLevel());
+        wet.setPos(origin(h).getX()+2.5,origin(h).getY()+PoolSpec.FLOOR_Y+.05,origin(h).getZ()+2.5);
+        dry.setPos(origin(h).getX()+2.5,origin(h).getY()+1.2,origin(h).getZ()+2.5);
+        wet.setNoAi(true);dry.setNoAi(true);wet.setNoGravity(true);dry.setNoGravity(true);
+        h.getLevel().addFreshEntity(wet);h.getLevel().addFreshEntity(dry);
+        h.runAtTickTime(335,()->{try{
+            var observation=new java.util.LinkedHashMap<String,Object>();
+            observation.put("wetPosition",wet.position().toString());observation.put("wetVelocity",wet.getDeltaMovement().toString());
+            observation.put("wetBounds",wet.getBoundingBox().toString());observation.put("touchesActualWater",owner.touchesWater(wet.getBoundingBox()));
+            observation.put("nativeInWater",wet.isInWater());observation.put("eligible",com.crabmod.hotbath.entity.FriendlyBathBenefits.isEligible(wet));
+            observation.put("effects",wet.getActiveEffects().toString());observation.put("dryEffects",dry.getActiveEffects().toString());
+            observation.put("worldTick",h.getLevel().getGameTime());observation.put("entityTick",wet.tickCount);
+            observation.put("entries",com.crabmod.hotbath.bathing.BathImmersion.enterCount(wet,"hotbath:hot_water_fluid"));
+            try {
+                if(System.getProperty("case.evidence")!=null) {
+                var file=java.nio.file.Path.of(System.getProperty("case.evidence"),"pool-stationary-contact.json");
+                java.nio.file.Files.writeString(file,new com.google.gson.GsonBuilder().setPrettyPrinting().create().toJson(observation),java.nio.file.StandardOpenOption.CREATE_NEW);
+                }
+            }catch(java.io.IOException error){throw new RuntimeException(error);}
             h.assertTrue(wet.hasEffect(net.minecraft.world.effect.MobEffects.MOVEMENT_SPEED),"Wet pool participant got no effect");
             h.assertTrue(!dry.hasEffect(net.minecraft.world.effect.MobEffects.MOVEMENT_SPEED),"Dry participant got bath effect");h.succeed();
         }finally{wet.discard();dry.discard();}});
@@ -436,4 +452,53 @@ public final class PoolGameTests {
         h.assertTrue(!p.isEyeInFluid(net.minecraft.tags.FluidTags.WATER),"Eyes above a shallow waterline stayed submerged");h.succeed();
     }
 
+
+    private static final class LavaContactPig extends net.minecraft.world.entity.animal.Pig {
+        int lavaCalls;
+        LavaContactPig(net.minecraft.server.level.ServerLevel level) {
+            super(net.minecraft.world.entity.EntityType.PIG,level);
+        }
+        @Override public void lavaHurt() {
+            lavaCalls++;
+            super.lavaHurt();
+        }
+    }
+
+    @GameTest(template="pool_empty")
+    public static void pool_lava_damage_dispatch_matches_native_world_lava(GameTestHelper h) {
+        var owner=player(h,RECT,false);
+        var pool=place(h,RECT,owner);
+        var pooled=new LavaContactPig(h.getLevel());
+        var world=new LavaContactPig(h.getLevel());
+        var control=origin(h).offset(10,0,0);
+        try {
+            var lava=new FluidStack(Fluids.LAVA,pool.layout().capacity());
+            h.assertTrue(pool.fluidHandler().fill(lava,IFluidHandler.FluidAction.EXECUTE)==lava.getAmount(),"Native pool lava fill");
+            pooled.setPos(origin(h).getX()+2.5,origin(h).getY()+2,origin(h).getZ()+2.5);
+            world.setPos(control.getX()+.5,control.getY()+2,control.getZ()+.5);
+            pooled.baseTick();world.baseTick();
+            h.assertTrue(pooled.lavaCalls==0&&world.lavaCalls==0,"Dry controls received lava contact");
+            h.getLevel().setBlock(control,Blocks.LAVA.defaultBlockState(),3);
+            pooled.setPos(origin(h).getX()+2.5,origin(h).getY()+.3,origin(h).getZ()+2.5);
+            world.setPos(control.getX()+.5,control.getY()+.3,control.getZ()+.5);
+            pooled.baseTick();world.baseTick();
+            if(System.getProperty("case.evidence")!=null) {
+                try {
+                    var evidence=java.nio.file.Path.of(System.getProperty("case.evidence"),"pool-lava-dispatch.json");
+                    java.nio.file.Files.writeString(evidence,new com.google.gson.GsonBuilder().setPrettyPrinting().create().toJson(
+                            java.util.Map.of("poolLavaCalls",pooled.lavaCalls,"worldLavaCalls",world.lavaCalls,
+                                    "poolHealth",pooled.getHealth(),"worldHealth",world.getHealth(),
+                                    "poolNativeLava",pooled.isInLava(),"worldNativeLava",world.isInLava())),
+                            java.nio.file.StandardOpenOption.CREATE_NEW);
+                }catch(java.io.IOException error){throw new RuntimeException(error);}
+            }
+            h.assertTrue(pooled.isInLava()&&world.isInLava(),"Matched native lava contact controls");
+            h.assertTrue(world.lavaCalls==1,"Native world lava must dispatch once per base tick");
+            h.assertTrue(pooled.lavaCalls==world.lavaCalls,"Pool dispatched lava damage more often than native world lava: pool="+pooled.lavaCalls+", world="+world.lavaCalls);
+        } finally {
+            pooled.discard();world.discard();PoolStructure.dismantle(pool,false);
+            h.getLevel().setBlock(control,Blocks.AIR.defaultBlockState(),3);
+        }
+        h.succeed();
+    }
 }

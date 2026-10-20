@@ -59,8 +59,6 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import mod.crabmod.showercore.block.entity.BathtubBlockEntity;
 import mod.crabmod.showercore.registers.BlockEntitiesRegister;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraftforge.fluids.FluidUtil;
 import net.minecraftforge.fluids.FluidStack;
 import mod.crabmod.showercore.Config;
@@ -532,8 +530,7 @@ public class BathtubBlock extends HorizontalDirectionalBlock implements EntityBl
                   Optional<CustomFluidDefinition> defOpt = CustomFluidAPI.getFluidFromItem(itemstack);
                   if (defOpt.isPresent()) {
                       CustomFluidDefinition definition = defOpt.get();
-                      FluidStack customFluidStack = new FluidStack(
-                              DynamicFluidRegistry.DYNAMIC_FLUID_STILL.get(), 1000);
+                      FluidStack customFluidStack = CustomFluidAPI.createCustomFluidStack(definition.id(),1000);
                       int filled = handler.fill(customFluidStack, net.minecraftforge.fluids.capability.IFluidHandler.FluidAction.SIMULATE);
                       if (filled == 1000) {
                           if (!level.isClientSide) {
@@ -760,32 +757,7 @@ public class BathtubBlock extends HorizontalDirectionalBlock implements EntityBl
   public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
       if(!level.isClientSide&&level.getBlockEntity(pos) instanceof BathtubBlockEntity tub) {
           tub.applyBathEffects(entity);
-          // Preserve the existing optional-mod interactions; base bath effects are owned by Hot Bath.
-          if(tub.isHot()&&(tub.getCustomFluidDefinition().isPresent()||tub.getBuiltinBathDefinition().isPresent())) {
-              if(entity.tickCount%20==0&&mod.crabmod.showercore.compat.ShowerCoreCompat.isGummyBear(entity))
-                  entity.hurt(level.damageSources().magic(),.5f);
-              // Serene Seasons: winter hot-bath resistance boost.
-              // Early winter  -> Resistance I (10s)
-              // Mid winter    -> Resistance II + Regeneration I (10s)
-              // Late winter   -> Resistance I (10s)
-              // Refreshed every 5s so standing in the bath keeps the effect alive.
-              if (entity instanceof LivingEntity livingEntity && entity.tickCount % 100 == 0) {
-                  mod.crabmod.showercore.compat.ShowerCoreCompat.WinterSubSeason sub =
-                          mod.crabmod.showercore.compat.ShowerCoreCompat.getWinterSubSeason(level);
-                  switch (sub) {
-                      case EARLY:
-                      case LATE:
-                          livingEntity.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 200, 0, true, true, true));
-                          break;
-                      case MID:
-                          livingEntity.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 200, 1, true, true, true));
-                          livingEntity.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 200, 0, true, true, true));
-                          break;
-                      default:
-                          break;
-                  }
-              }
-          }
+
       }
       super.entityInside(state,level,pos,entity);
     }

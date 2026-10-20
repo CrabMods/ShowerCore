@@ -17,12 +17,17 @@ public abstract class PoolEntityFluidMixin {
     @Shadow(remap=false) private FluidType forgeFluidTypeOnEyes;
 
     @Inject(method="updateFluidHeightAndDoFluidPushing()V",at=@At("RETURN"),remap=false)
-    private void showercore$poolDepth(CallbackInfo ci) {
+    private void showercore$bathContactAndPoolDepth(CallbackInfo ci) {
         var entity=(Entity)(Object)this;
         if(entity.touchingUnloadedChunk())return;
+        var source=mod.crabmod.showercore.utils.CoreUtils.bathAt(entity);
+        if(source==null) {
+            com.crabmod.hotbath.api.HotBathApi.endFluidContact(entity);return;
+        }
+        source.applyBathEffects(entity);
+        if(!(source instanceof mod.crabmod.showercore.pool.PoolBlockEntity pool))return;
         var bounds=entity.getBoundingBox().deflate(.001);
-        var pool=PoolContact.find(entity,p->p.touchesWater(bounds));
-        if(pool==null)return;
+        if(!pool.touchesWater(bounds))return;
         var type=pool.fluid().getFluid().getFluidType();
         double depth=pool.origin().getY()+pool.waterY()-bounds.minY;
         setFluidTypeHeight(type,Math.max(entity.getFluidTypeHeight(type),depth));

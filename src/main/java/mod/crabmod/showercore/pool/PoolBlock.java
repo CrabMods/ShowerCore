@@ -79,11 +79,11 @@ public final class PoolBlock extends Block implements EntityBlock,BathFaucet,mod
     }
     @Override public void tick(BlockState state,ServerLevel level,BlockPos pos,RandomSource random) {
         if(!(level.getBlockEntity(pos) instanceof PoolBlockEntity part)||!part.configured())return;
-        if(part.isController()) {PoolStructure.validateLoaded(part);return;}
+        if(part.isController()) {part.runScheduledUpdate();return;}
         if(level.hasChunkAt(part.ownerPos())) {
             var owner=part.controller();
             if(owner==null) {part.retire();level.removeBlock(pos,false);}
-            else level.scheduleTick(owner.getBlockPos(),this,1); // Coalesce member loads into one structure update.
+            else owner.requestValidation(); // Coalesce member loads into one structure update.
         }
     }
 

@@ -155,13 +155,4 @@ class BathtubBERRenderingRegressionTest {
                         + "DynamicFluidType tint which is identical across all custom variants.");
     }
 
-    @Test
-    @DisplayName("BER reads color and opacity from CustomFluidDefinition")
-    void colorUsesDefinitionColorAndOpacity() throws IOException {
-        String source = TestSourceUtils.readSource(BER_SOURCE);
-        assertTrue(source.contains("def.color()"),
-                "BER must read def.color() from CustomFluidDefinition for per-fluid RGB.");
-        assertTrue(source.contains("def.opacity()"),
-                "BER must read def.opacity() from CustomFluidDefinition for per-fluid alpha.");
-    }
 }

@@ -21,12 +21,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *       key breaks that bath core's activation detection at runtime.</li>
  *   <li>A steam-fluid list and a rubber-duck-destroy fluid list.</li>
  *   <li>A boolean {@code enableModIntegrations} toggle (default {@code true})
- *       gating every external-mod call in {@code ShowerCoreCompat}.</li>
+ *       reporting the container policy through the Hot Bath API.</li>
  *   <li>An {@code onLoad} handler that populates the eight cached
  *       {@code Set<Block>} / {@code Set<Fluid>} fields plus the boolean toggle,
  *       returning early when the event is for a different spec.</li>
  *   <li>A {@code public static boolean isModIntegrationsEnabled()} accessor
- *       used by {@code ShowerCoreCompat}.</li>
+ *       used by the shared contact reports.</li>
  * </ul>
  */
 class ConfigSpecRegressionTest {
@@ -107,7 +107,7 @@ class ConfigSpecRegressionTest {
         assertTrue(Pattern.compile(
                         "public\\s+static\\s+boolean\\s+isModIntegrationsEnabled\\s*\\(\\s*\\)")
                         .matcher(source).find(),
-                "Config must expose 'public static boolean isModIntegrationsEnabled()'. ShowerCoreCompat "
+                "Config must expose 'public static boolean isModIntegrationsEnabled()'. The contact reporters "
                         + "calls this on every integration entry; renaming it silently disables every gate.");
         assertTrue(Pattern.compile("return\\s+enableModIntegrations\\s*;").matcher(source).find(),
                 "isModIntegrationsEnabled must return the cached 'enableModIntegrations' field — returning "

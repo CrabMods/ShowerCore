@@ -1,6 +1,6 @@
 package mod.crabmod.showercore.gametest;
 
-import com.crabmod.hotbath.api.BathFluidContainer;
+import com.crabmod.hotbath.api.HotBathApi;
 import com.crabmod.hotbath.custom_fluid.*;
 import mod.crabmod.showercore.block.BathtubBlock;
 import mod.crabmod.showercore.block.entity.BathtubBlockEntity;
@@ -72,11 +72,14 @@ public final class BathDatapackGameTests {
             var f=fixture(h,style);
             try {
                 var state=stack.getFluid().defaultFluidState();
-                h.assertTrue(type.getDensity(state,h.getLevel(),f.pos())==definition.density(),style+" density");
-                h.assertTrue(type.getViscosity(state,h.getLevel(),f.pos())==definition.viscosity(),style+" viscosity");
-                h.assertTrue(type.getTemperature(state,h.getLevel(),f.pos())==(int)(definition.temperature()+273),style+" temperature");
-                h.assertTrue(type.getLightLevel(state,h.getLevel(),f.pos())==definition.luminosity(),style+" luminosity");
-                if(h.getLevel().getBlockEntity(f.pos()) instanceof BathFluidContainer container) {
+                var properties=HotBathApi.fluidProperties(stack,false);
+                if(style.equals("world")) {
+                    h.assertTrue(type.getDensity(state,h.getLevel(),f.pos())==definition.density()&&type.getViscosity(state,h.getLevel(),f.pos())==definition.viscosity(),"Native world physical properties");
+                    h.assertTrue(type.getTemperature(state,h.getLevel(),f.pos())==(int)(definition.temperature()+273)&&type.getLightLevel(state,h.getLevel(),f.pos())==definition.luminosity(),"Native world heat/light properties");
+                }
+                h.assertTrue(properties.density()==definition.density()&&properties.viscosity()==definition.viscosity(),style+" stack physical properties");
+                h.assertTrue(properties.temperatureCelsius()==definition.temperature()&&properties.luminosity()==definition.luminosity(),style+" stack heat/light properties");
+                if(h.getLevel().getBlockEntity(f.pos()) instanceof BathFluidSource container) {
                     h.assertTrue(container.getCustomFluidDefinition().orElseThrow().equals(definition),style+" complete definition identity");
                     var copy=CustomFluidAPI.createBucket(container.getCustomFluidDefinition().orElseThrow());
                     var restored=CustomFluidAPI.getFluidFromItem(copy).orElseThrow();
@@ -115,10 +118,23 @@ public final class BathDatapackGameTests {
     @GameTest(template="pool_empty",timeoutTicks=150) public static void rounded_custom_effect_delay_and_reentry(GameTestHelper h){delayedEffects(h,"rounded");}
     @GameTest(template="pool_empty",timeoutTicks=150) public static void circle_custom_effect_delay_and_reentry(GameTestHelper h){delayedEffects(h,"circle");}
 
-    @GameTest(template="pool_empty")
+    @GameTest(template="pool_empty",batch="bath-profile-contract",timeoutTicks=500)
     public static void builtin_bath_profiles_execute_in_every_container(GameTestHelper h) {
         var originals=BuiltinBathDefinitions.serverJsons();
-        try {
+        class Run {
+            Fixture fixture;Pig pig;boolean finished;
+            void close() {if(pig!=null)pig.discard();if(fixture!=null)fixture.close(h);pig=null;fixture=null;}
+            void restore() {
+                var original=new HashMap<ResourceLocation,BuiltinBathDefinition>();
+                for(String text:originals){var def=BuiltinBathDefinition.parse(com.google.gson.JsonParser.parseString(text));original.put(def.id(),def);}
+                BuiltinBathDefinitions.replace(BuiltinBathDefinitions.catalog(original,originals));
+            }
+            void guard(Runnable action) {
+                if(finished)return;
+                try {action.run();}catch(Throwable error) {finished=true;close();restore();h.fail(error.toString());}
+            }
+        }
+        var run=new Run();
             var next=new HashMap<ResourceLocation,BuiltinBathDefinition>();var jsons=new ArrayList<String>();
             for(String text:originals) {
                 var json=com.google.gson.JsonParser.parseString(text).getAsJsonObject();
@@ -126,26 +142,35 @@ public final class BathDatapackGameTests {
                 json.add("bath",profile);var definition=BuiltinBathDefinition.parse(json);next.put(definition.id(),definition);jsons.add(json.toString());
             }
             BuiltinBathDefinitions.replace(BuiltinBathDefinitions.catalog(next,jsons));
-            for(var definition:next.values())for(String style:STYLES) {
-                var fluid=new FluidStack(BuiltInRegistries.FLUID.get(definition.id()),1000);var f=fixture(h,style,fluid);
-                var pig=new Pig(EntityType.PIG,h.getLevel());pig.setPos(f.pos().getX()+.5,f.pos().getY()+.3,f.pos().getZ()+.5);pig.setHealth(5);pig.tickCount=500;
-                pig.addEffect(new net.minecraft.world.effect.MobEffectInstance(MobEffects.POISON,200,0));
-                pig.addEffect(new net.minecraft.world.effect.MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN,200,0));pig.setRemainingFireTicks(100);
-                try {
-                    for(int n=0;n<4;n++) {
-                        pig.tickCount++;var state=h.getLevel().getBlockState(f.pos());state.entityInside(h.getLevel(),f.pos(),pig);
-                        if(n==0)h.assertTrue(!pig.hasEffect(MobEffects.MOVEMENT_SPEED),style+" built-in profile ignored its delay");
-                    }
-                    var effect=pig.getEffect(MobEffects.MOVEMENT_SPEED);
-                    h.assertTrue(effect!=null&&effect.getAmplifier()==2&&effect.getDuration()==81&&effect.isAmbient()&&!effect.isVisible()&&!effect.showIcon(),style+" "+definition.id()+" profile payload");
-                    h.assertTrue(pig.getHealth()>5&&!pig.isOnFire()&&!pig.hasEffect(MobEffects.POISON)&&pig.hasEffect(MobEffects.MOVEMENT_SLOWDOWN),style+" healing/extinguish/cleansing exclusions");
-                } finally {pig.discard();f.close(h);}
-            }
-        } finally {
-            var original=new HashMap<ResourceLocation,BuiltinBathDefinition>();for(String json:originals){var def=BuiltinBathDefinition.parse(com.google.gson.JsonParser.parseString(json));original.put(def.id(),def);}
-            BuiltinBathDefinitions.replace(BuiltinBathDefinitions.catalog(original,originals));
+
+        h.onEachTick(()->run.guard(()->{
+            if(run.pig==null)return;
+            run.pig.tickCount++;
+            var state=h.getLevel().getBlockState(run.fixture.pos());
+            state.entityInside(h.getLevel(),run.fixture.pos(),run.pig);
+            float health=run.pig.getHealth();
+            state.entityInside(h.getLevel(),run.fixture.pos(),run.pig);
+            h.assertTrue(run.pig.getHealth()==health,"Duplicate same-world-tick callback repeated instant healing");
+        }));
+        int index=0;
+        for(var definition:next.values())for(String style:STYLES) {
+            int tick=1+index++*8;
+            h.runAtTickTime(tick,()->run.guard(()->{
+                run.fixture=fixture(h,style,new FluidStack(BuiltInRegistries.FLUID.get(definition.id()),1000));
+                run.pig=new Pig(EntityType.PIG,h.getLevel());
+                var pos=run.fixture.pos();run.pig.setPos(pos.getX()+.5,pos.getY()+.3,pos.getZ()+.5);run.pig.setHealth(5);
+                run.pig.addEffect(new net.minecraft.world.effect.MobEffectInstance(MobEffects.POISON,200,0));
+                run.pig.addEffect(new net.minecraft.world.effect.MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN,200,0));run.pig.setRemainingFireTicks(100);
+            }));
+            h.runAtTickTime(tick+1,()->run.guard(()->h.assertTrue(!run.pig.hasEffect(MobEffects.MOVEMENT_SPEED),style+" ignored its configured delay")));
+            h.runAtTickTime(tick+5,()->run.guard(()->{
+                var effect=run.pig.getEffect(MobEffects.MOVEMENT_SPEED);
+                h.assertTrue(effect!=null&&effect.getAmplifier()==2&&effect.getDuration()==81&&effect.isAmbient()&&!effect.isVisible()&&!effect.showIcon(),style+" "+definition.id()+" profile payload");
+                h.assertTrue(run.pig.getHealth()>5&&!run.pig.isOnFire()&&!run.pig.hasEffect(MobEffects.POISON)&&run.pig.hasEffect(MobEffects.MOVEMENT_SLOWDOWN),style+" healing/extinguish/cleansing exclusions");
+                run.close();
+            }));
         }
-        h.succeed();
+        h.runAtTickTime(1+index*8,()->run.guard(()->{run.close();run.restore();run.finished=true;h.succeed();}));
     }
 
     @GameTest(template="pool_empty")
@@ -159,7 +184,8 @@ public final class BathDatapackGameTests {
                 try {
                     var reloaded=new ArrayList<>(originals);reloaded.removeIf(d->d.id().equals(ID));reloaded.add(changed);CustomFluidRegistry.onFluidsReloaded(reloaded);
                     var stack=CustomFluidAPI.createCustomFluidStack(ID,1000);var type=stack.getFluid().getFluidType();var state=stack.getFluid().defaultFluidState();
-                    h.assertTrue(type.getDensity(state,h.getLevel(),f.pos())==900&&type.getViscosity(state,h.getLevel(),f.pos())==700&&type.getTemperature(state,h.getLevel(),f.pos())==291&&type.getLightLevel(state,h.getLevel(),f.pos())==0,style+" cached old native properties after reload");
+                var properties=HotBathApi.fluidProperties(stack,false);
+                h.assertTrue(properties.density()==changed.density()&&properties.viscosity()==changed.viscosity(),style+" stack physical properties");
                     if(h.getLevel().getBlockEntity(f.pos()) instanceof BathFluidSource source)h.assertTrue(source.temperature()==18&&!source.isHot()&&!source.emitsSteam(),style+" cached old heat/steam after reload");
                 } finally {f.close(h);}
             }

@@ -546,8 +546,7 @@ public class BathtubBlock extends HorizontalDirectionalBlock implements EntityBl
                   if (defOpt.isPresent()) {
                       CustomFluidDefinition definition = defOpt.get();
                       // Use the dynamic custom fluid as the FluidStack base
-                      FluidStack customFluidStack = new FluidStack(
-                              DynamicFluidRegistry.DYNAMIC_FLUID_STILL.get(), 1000);
+                      FluidStack customFluidStack = CustomFluidAPI.createCustomFluidStack(definition.id(),1000);
                       int filled = handler.fill(customFluidStack, IFluidHandler.FluidAction.SIMULATE);
                       if (filled == 1000) {
                           if (!level.isClientSide) {
@@ -831,11 +830,6 @@ public class BathtubBlock extends HorizontalDirectionalBlock implements EntityBl
   public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
       if(!level.isClientSide&&level.getBlockEntity(pos) instanceof BathtubBlockEntity tub) {
           tub.applyBathEffects(entity);
-          // Preserve the existing optional-mod interactions; base bath effects are owned by Hot Bath.
-          if(tub.isHot()&&(tub.getCustomFluidDefinition().isPresent()||tub.getBuiltinBathDefinition().isPresent())) {
-              if(entity.tickCount%20==0&&mod.crabmod.showercore.compat.ShowerCoreCompat.isGummyBear(entity))
-                  entity.hurt(level.damageSources().magic(),.5f);
-          }
       }
       super.entityInside(state,level,pos,entity);
     }

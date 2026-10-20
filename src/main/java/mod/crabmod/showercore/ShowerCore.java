@@ -67,9 +67,7 @@ public class ShowerCore {
 
   private void commonSetup(final FMLCommonSetupEvent event) {
     LOGGER.info("ShowerCore common setup complete.");
-    // Temperature mod compat (Cold Sweat, TAN, LSO) is handled automatically
-    // via CustomFluidHandlerMixin intercepting hotBath's API methods.
-    // No separate registration needed - hotBath's own handlers detect ShowerCore players.
+    // Hot Bath owns optional-mod effects; measured bath and shower contacts use its public API.
   }
 
   private void addCreative(BuildCreativeModeTabContentsEvent event) {

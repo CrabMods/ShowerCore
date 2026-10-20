@@ -47,6 +47,7 @@ public class BathtubBlockEntity extends BlockEntity implements mod.crabmod.showe
 
     public void setCustomFluidId(@Nullable ResourceLocation customFluidId) {
         this.customFluidId = customFluidId;
+        if(customFluidId!=null)com.crabmod.hotbath.custom_fluid.CustomFluidAPI.setCustomFluidId(fluidTank.getFluid(),customFluidId);
         setChanged();
         updateLightLevel();
         if (level != null && !level.isClientSide) {
@@ -81,6 +82,7 @@ public class BathtubBlockEntity extends BlockEntity implements mod.crabmod.showe
     @Override
     public void onLoad() {
         super.onLoad();
+        mod.crabmod.showercore.event.BathDefinitionEvents.loaded(this);
         // Also initializes the light property when loading saves made before it existed.
         updateLightLevel();
     }
@@ -110,6 +112,7 @@ public class BathtubBlockEntity extends BlockEntity implements mod.crabmod.showe
         } else {
             customFluidId = null;
         }
+        if(customFluidId!=null)com.crabmod.hotbath.custom_fluid.CustomFluidAPI.setCustomFluidId(fluidTank.getFluid(),customFluidId);
         if (tag.contains(TAG_MATERIAL_BLOCK_ID)) {
             materialBlockId = ResourceLocation.tryParse(tag.getString(TAG_MATERIAL_BLOCK_ID));
         } else {
@@ -165,5 +168,8 @@ public class BathtubBlockEntity extends BlockEntity implements mod.crabmod.showe
     }
     @Override public void refreshBathDefinition() {
         updateLightLevel();
+    }
+    @Override public void setRemoved() {
+        mod.crabmod.showercore.event.BathDefinitionEvents.removed(this);super.setRemoved();
     }
 }

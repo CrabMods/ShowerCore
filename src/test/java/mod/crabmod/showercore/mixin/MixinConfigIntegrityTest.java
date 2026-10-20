@@ -53,7 +53,7 @@ class MixinConfigIntegrityTest {
     void mixinsJsonIsRequired() {
         assertTrue(mixinsJson.matches("(?s).*\"required\"\\s*:\\s*true.*"),
                 "mixins.showercore.json must set \"required\": true. A non-required mixin config silently "
-                        + "skips on apply failure — the DirtinessHandler and CustomFluidHandler mixins are "
+                        + "skips on apply failure — the virtual-fluid movement mixins are "
                         + "both load-bearing (Bugs R and the hotBath temperature integration). If the "
                         + "mixin-platform can't apply them, the mod MUST refuse to load rather than "
                         + "running broken.");

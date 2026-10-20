@@ -19,7 +19,10 @@ public final class PoolLifecycle {
             if(chunk==null)continue;
             for(var be:chunk.getBlockEntities().values())if(be instanceof PoolBlockEntity part&&part.configured()) {
                 var owner=part.ownerPos();
-                if((owner.getX()>>4)==entered.x&&(owner.getZ()>>4)==entered.z)level.scheduleTick(part.getBlockPos(),part.getBlockState().getBlock(),1);
+                if((owner.getX()>>4)==entered.x&&(owner.getZ()>>4)==entered.z) {
+                    if(part.isController())part.requestValidation();
+                    else level.scheduleTick(part.getBlockPos(),part.getBlockState().getBlock(),1);
+                }
             }
         }
     }

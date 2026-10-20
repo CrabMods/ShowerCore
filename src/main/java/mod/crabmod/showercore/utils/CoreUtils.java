@@ -18,7 +18,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class CoreUtils {
     @Nullable
-    private static BathFluidSource bathAt(Entity entity) {
+    public static BathFluidSource bathAt(Entity entity) {
         var pool=PoolContact.find(entity,p->true);
         if(pool!=null)return pool;
         var pos=entity.getVehicle() instanceof SeatEntity seat?seat.blockPosition():entity.blockPosition();

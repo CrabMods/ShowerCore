@@ -4,8 +4,6 @@
   "compatibilityLevel": "JAVA_21",
   "refmap": "mixins.showercore.refmap.json",
   "mixins": [
-    "CustomFluidHandlerMixin",
-    "DirtinessHandlerMixin",
     "PoolEntityFluidMixin",
     "PoolLivingFluidMixin"
   ],

@@ -21,7 +21,7 @@ final class BathFluidAppearance {
 
     static net.minecraft.resources.ResourceLocation texture(BathFluidSource source,@Nullable Level level,BlockPos pos,boolean flowing) {
         var stack=source.fluid();var extension=IClientFluidTypeExtensions.of(stack.getFluid());
-        if(level==null)return flowing?extension.getFlowingTexture(stack):extension.getStillTexture(stack);
+        if(level==null||CustomFluidAPI.isDynamicCustomFluid(stack))return flowing?extension.getFlowingTexture(stack):extension.getStillTexture(stack);
         return flowing?extension.getFlowingTexture(stack.getFluid().defaultFluidState(),level,pos)
                 :extension.getStillTexture(stack.getFluid().defaultFluidState(),level,pos);
     }

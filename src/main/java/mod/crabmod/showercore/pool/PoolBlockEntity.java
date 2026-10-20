@@ -30,6 +30,8 @@ public final class PoolBlockEntity extends BlockEntity implements BathFluidSourc
     private boolean active, circulating, loading;
     private int paidMaterials;
     private int lastSynchronizedLight=-1;
+    private PoolLayout geometry;
+    private boolean synchronizationPending, validationPending;
 
     public PoolBlockEntity(BlockPos pos,BlockState state) { super(BlockEntitiesRegister.BATHING_POOL.get(),pos,state); }
     public boolean configured() { return poolId!=null&&settings!=null; }
@@ -37,13 +39,21 @@ public final class PoolBlockEntity extends BlockEntity implements BathFluidSourc
     public BlockPos origin() { return origin; }
     public BlockPos ownerPos() { return owner; }
     public PoolSettings settings() { return settings; }
-    public PoolLayout layout() { return PoolLayout.of(settings.spec()); }
+    public PoolLayout layout() {
+        if(geometry==null||!geometry.spec().equals(settings.spec()))geometry=PoolLayout.of(settings.spec());
+        return geometry;
+    }
     public PoolLayout.Cell cell() { return layout().cell(worldPosition.getX()-origin.getX(),worldPosition.getZ()-origin.getZ()); }
     public boolean isController() { return configured()&&worldPosition.equals(owner)&&getBlockState().getValue(PoolBlock.CONTROLLER); }
     public boolean active() { return active&&!isRemoved(); }
     public boolean circulating() { return circulating&&!visibleFluid.isEmpty(); }
-    public FluidStack fluid() { return visibleFluid; }
-    public double waterY() { return layout().waterY(visibleFluid.getAmount()); }
+    public FluidStack fluid() {
+        if(level!=null&&!level.isClientSide&&!isController()) {
+            var controller=controller();if(controller!=null)return controller.visibleFluid;
+        }
+        return visibleFluid;
+    }
+    public double waterY() { return layout().waterY(fluid().getAmount()); }
     public int paidMaterials() { return paidMaterials; }
 
     void initialize(BlockPos origin,PoolSettings settings,UUID id) {
@@ -66,7 +76,7 @@ public final class PoolBlockEntity extends BlockEntity implements BathFluidSourc
                 if(!loading) {
                     visibleFluid=getFluid().copy();
                     if(visibleFluid.isEmpty())circulating=false;
-                    synchronize();
+                    queueSynchronization();
                 }
             }
         };
@@ -93,8 +103,25 @@ public final class PoolBlockEntity extends BlockEntity implements BathFluidSourc
         circulating=!circulating&&!visibleFluid.isEmpty();synchronize();
     }
 
+    private void queueSynchronization() {
+        if(level==null||level.isClientSide||!isController())return;
+        synchronizationPending=true;
+        level.scheduleTick(worldPosition,getBlockState().getBlock(),1);
+    }
+    public void requestValidation() {
+        if(level==null||level.isClientSide||!isController())return;
+        validationPending=true;
+        level.scheduleTick(worldPosition,getBlockState().getBlock(),1);
+    }
+    public void runScheduledUpdate() {
+        if(validationPending) {
+            validationPending=false;
+            PoolStructure.validateLoaded(this);
+        } else if(synchronizationPending)synchronize();
+    }
     public void synchronize() {
         if(level==null||level.isClientSide||!configured()||!isController())return;
+        synchronizationPending=false;
         int liquidLight=luminosity();lastSynchronizedLight=liquidLight;
         for(var cell:layout().cells()) {
             BlockPos pos=origin.offset(cell.x(),0,cell.z());
@@ -109,12 +136,12 @@ public final class PoolBlockEntity extends BlockEntity implements BathFluidSourc
         }
     }
 
-    @Override @Nullable public ResourceLocation getCustomFluidId() { return CustomFluidAPI.getCustomFluidId(visibleFluid); }
+    @Override @Nullable public ResourceLocation getCustomFluidId() { return CustomFluidAPI.getCustomFluidId(fluid()); }
     public BathtubBlock.LiquidType liquidType() {
-        if(visibleFluid.isEmpty())return BathtubBlock.LiquidType.EMPTY;
-        if(visibleFluid.getFluid()==Fluids.WATER)return BathtubBlock.LiquidType.WATER;
+        if(fluid().isEmpty())return BathtubBlock.LiquidType.EMPTY;
+        if(fluid().getFluid()==Fluids.WATER)return BathtubBlock.LiquidType.WATER;
         if(getCustomFluidId()!=null)return BathtubBlock.LiquidType.CUSTOM;
-        var id=BuiltInRegistries.FLUID.getKey(visibleFluid.getFluid());
+        var id=BuiltInRegistries.FLUID.getKey(fluid().getFluid());
         if(id.getNamespace().equals("hotbath")) {
             for(var type:BathtubBlock.LiquidType.values())if(id.getPath().equals(type.getSerializedName()+"_fluid"))return type;
         }
@@ -124,7 +151,7 @@ public final class PoolBlockEntity extends BlockEntity implements BathFluidSourc
         return active()&&BathFluidSource.super.emitsSteam();
     }
     public boolean touchesWater(AABB bounds) {
-        if(!configured()||visibleFluid.isEmpty()||bounds.minY>=origin.getY()+waterY()||bounds.maxY<=origin.getY()+PoolSpec.FLOOR_Y)return false;
+        if(!configured()||fluid().isEmpty()||bounds.minY>=origin.getY()+waterY()||bounds.maxY<=origin.getY()+PoolSpec.FLOOR_Y)return false;
         return PoolLayout.area(PoolLayout.clip(layout().waterOutline(),bounds.minX-origin.getX(),bounds.minZ-origin.getZ(),
                 bounds.maxX-origin.getX(),bounds.maxZ-origin.getZ()))>1e-8;
     }
@@ -139,12 +166,15 @@ public final class PoolBlockEntity extends BlockEntity implements BathFluidSourc
 
     @Override public void onLoad() {
         super.onLoad();
+        mod.crabmod.showercore.event.BathDefinitionEvents.loaded(this);
         if(level!=null&&!level.isClientSide&&configured()) {
-            if(level.hasChunkAt(owner))level.scheduleTick(owner,getBlockState().getBlock(),1);
+            if(isController())requestValidation();
+            else if(level.hasChunkAt(owner))level.scheduleTick(worldPosition,getBlockState().getBlock(),1);
             level.invalidateCapabilities(worldPosition);
         }
     }
     @Override public void setRemoved() {
+        mod.crabmod.showercore.event.BathDefinitionEvents.removed(this);
         if(level!=null&&!level.isClientSide&&isController()) {
             for(var cell:layout().cells()) {
                 var pos=origin.offset(cell.x(),0,cell.z());if(level.hasChunkAt(pos))level.invalidateCapabilities(pos);

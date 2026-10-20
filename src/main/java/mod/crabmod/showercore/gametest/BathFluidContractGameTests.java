@@ -90,11 +90,13 @@ public final class BathFluidContractGameTests {
             var lava=new FluidStack(net.minecraft.world.level.material.Fluids.LAVA,pool.layout().capacity());
             h.assertTrue(pool.fluidHandler().fill(lava,IFluidHandler.FluidAction.EXECUTE)==lava.getAmount(),"Native lava capability fill");
             player.setPos(origin.getX()+2.5,origin.getY()+.3,origin.getZ()+2.5);
+            player.baseTick();
             float expected=lava.getFluid().getFluidType().getTemperature(lava)-273f;
             h.assertTrue(CoreUtils.isPlayerInShowerCoreHotWater(player),"Existing hot-fluid contact disappeared");
             h.assertTrue(Math.abs(com.crabmod.hotbath.util.CustomFluidHandler.getBathTemperature(player)-expected)<.001,"Warmth detection and compatibility temperature disagree");
             pool.fluidHandler().drain(Integer.MAX_VALUE,IFluidHandler.FluidAction.EXECUTE);
             var water=new FluidStack(net.minecraft.world.level.material.Fluids.WATER,pool.layout().capacity());pool.fluidHandler().fill(water,IFluidHandler.FluidAction.EXECUTE);
+            player.baseTick();
             h.assertTrue(!com.crabmod.hotbath.util.CustomFluidHandler.isPlayerInHotBath(player),"Ordinary water became a hot bath");
         } finally {PoolStructure.dismantle(pool,false);}
         h.succeed();

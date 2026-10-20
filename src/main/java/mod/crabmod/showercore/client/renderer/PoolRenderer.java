@@ -35,9 +35,9 @@ public final class PoolRenderer implements BlockEntityRenderer<PoolBlockEntity> 
         var texture=extension.getStillTexture(fluid);
         var waterSprite=Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS)
                 .apply(texture==null?MissingTextureAtlasSprite.getLocation():texture);
-        int custom=part.getCustomFluidId()==null?-1:com.crabmod.hotbath.custom_fluid.CustomFluidAPI.getFluidColor(part.getCustomFluidId());
-        int tint=part.getLevel()==null?extension.getTintColor(fluid):extension.getTintColor(fluid.getFluid().defaultFluidState(),part.getLevel(),part.getBlockPos());
-        int color=custom==-1?tint:0xFF000000|(custom&0x00FFFFFF);
+        int color=part.getCustomFluidDefinition()
+                .map(definition->com.crabmod.hotbath.custom_fluid.CustomFluidAPI.getFluidColor(definition.id()))
+                .orElseGet(()->part.getLevel()==null?extension.getTintColor(fluid):extension.getTintColor(fluid.getFluid().defaultFluidState(),part.getLevel(),part.getBlockPos()));
         float r=((color>>16)&255)/255f,g=((color>>8)&255)/255f,b=(color&255)/255f,a=((color>>>24)&255)/255f;
         if(fluid.getFluid()==Fluids.LAVA)light=LightTexture.FULL_BRIGHT;
         var water=buffers.getBuffer(Sheets.translucentCullBlockSheet());

@@ -1,6 +1,6 @@
 package mod.crabmod.showercore.client.renderer;
 
-import com.crabmod.hotbath.custom_fluid.CustomFluidDefinition;
+import com.crabmod.hotbath.custom_fluid.CustomFluidAPI;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import mod.crabmod.showercore.block.BathtubBlock;
@@ -48,20 +48,12 @@ public class BathtubBlockEntityRenderer implements BlockEntityRenderer<BathtubBl
 
         TextureAtlasSprite sprite = Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(stillTexture);
 
-        // Get color from BathtubBlockEntity's custom fluid definition directly,
-        // because DynamicFluidType's position-based getTintColor looks for CustomFluidBlockEntity
-        // which doesn't exist at the bathtub position (it's a BathtubBlockEntity).
-        int color;
-        java.util.Optional<CustomFluidDefinition> defOpt = pBlockEntity.getCustomFluidDefinition();
-        if (defOpt.isPresent()) {
-            CustomFluidDefinition def = defOpt.get();
-            int rgb = def.color();
-            int alpha = (int)(def.opacity() * 255) & 0xFF;
-            color = (alpha << 24) | (rgb & 0x00FFFFFF);
-        } else {
-            // Fallback for non-hotBath custom fluids (lava, modded fluids, etc.)
-            color = fluidTypeExtensions.getTintColor(fluidStack);
-        }
+        // Legacy bathtubs keep their custom fluid identity separately from the tank stack.
+        int color = pBlockEntity.getCustomFluidDefinition()
+                .map(definition -> CustomFluidAPI.getFluidColor(definition.id()))
+                .orElseGet(() -> pBlockEntity.getLevel() != null
+                        ? fluidTypeExtensions.getTintColor(fluid.defaultFluidState(), pBlockEntity.getLevel(), pBlockEntity.getBlockPos())
+                        : fluidTypeExtensions.getTintColor(fluidStack));
 
         float alpha = ((color >> 24) & 0xFF) / 255f;
         float red = ((color >> 16) & 0xFF) / 255f;
